@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일본 3박 4일 완벽 가이드 (접기 기능 추가)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+        #map { height: 100%; width: 100%; z-index: 0; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        
+        /* Marker Animations */
+        .pulse-icon {
+            background-color: #ef4444; border-radius: 50%; width: 12px; height: 12px;
+            box-shadow: 0 0 0 rgba(239, 68, 68, 0.4); animation: pulse 2s infinite;
+        }
+        .pulse-icon-blue {
+            background-color: #3b82f6; border-radius: 50%; width: 12px; height: 12px;
+            box-shadow: 0 0 0 rgba(59, 130, 246, 0.4); animation: pulse-blue 2s infinite;
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        
+        .schedule-item { transition: all 0.2s; border-left: 3px solid transparent; }
+        .schedule-item:hover { transform: translateX(4px); border-left-color: #cbd5e1; }
+        .active-card { border-left-color: #3b82f6 !important; background-color: #eff6ff !important; }
+        
+        .split-badge-a { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .split-badge-b { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        
+        /* Custom Popup */
+        .leaflet-popup-content-wrapper { border-radius: 12px; padding: 0; overflow: hidden; }
+        .leaflet-popup-content { margin: 0; width: 280px !important; }
+
+        /* Collapse Animation */
+        #info-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s;
+            overflow: hidden;
+        }
+        .collapsed-content {
+            max-height: 0 !important;
+            opacity: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        .rotate-180 { transform: rotate(180deg); }
+    </style>
+</head>
+<body class="bg-slate-100 h-screen flex flex-col md:flex-row overflow-hidden">
+
+    <!-- Mobile Header -->
+    <div class="md:hidden bg-indigo-600 text-white p-3 shadow-md z-20 flex justify-between items-center shrink-0">
+        <h1 class="font-bold text-lg">🇯🇵 3박 4일 일정표</h1>
+        <span id="total-cost-mobile" class="text-xs bg-indigo-700 px-2 py-1 rounded font-mono"></span>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="w-full md:w-1/3 flex flex-col h-1/2 md:h-full bg-white shadow-xl z-10 relative">
+        <div class="hidden md:block p-5 bg-indigo-600 text-white shadow-md shrink-0">
+            <h1 class="text-2xl font-bold">🇯🇵 Japan Travel</h1>
+            <p class="text-indigo-100 text-sm mt-1">오사카 • 교토 • 도쿄 (1/28 ~ 1/31)</p>
+            <div id="total-cost-desktop" class="mt-3 inline-block bg-indigo-800 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wide"></div>
+        </div>
+
+        <!-- Date Tabs -->
+        <div class="flex overflow-x-auto bg-white border-b shrink-0">
+            <button onclick="selectDay(0)" id="tab-0" class="flex-1 py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">1일차<br><span class="text-xs font-normal">오사카</span></button>
+            <button onclick="selectDay(1)" id="tab-1" class="flex-1 py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">2일차<br><span class="text-xs font-normal">USJ</span></button>
+            <button onclick="selectDay(2)" id="tab-2" class="flex-1 py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">3일차<br><span class="text-xs font-normal">교토</span></button>
+            <button onclick="selectDay(3)" id="tab-3" class="flex-1 py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">4일차<br><span class="text-xs font-normal">도쿄</span></button>
+        </div>
+
+        <!-- Schedule List -->
+        <div id="schedule-list" class="flex-1 overflow-y-auto p-2 md:p-4 space-y-3 bg-slate-50 pb-20 md:pb-5"></div>
+        
+        <!-- Split Legend (Day 4 only) -->
+        <div id="split-legend" class="absolute bottom-0 w-full bg-white border-t p-2 text-xs flex justify-around hidden shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
+            <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>A팀: 멘도코로 혼다</span></div>
+            <div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full"></span> <span>B팀: 호타테 비요리</span></div>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div class="w-full md:w-2/3 h-1/2 md:h-full relative">
+        <div id="map"></div>
+        
+        <!-- Info Overlay (Collapsible) -->
+        <div id="map-info" class="absolute top-5 right-5 bg-white rounded-xl shadow-2xl hidden md:flex flex-col z-[400] w-80 border border-gray-100 transition-all duration-300 opacity-0 translate-y-[-20px]">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-4 bg-gray-50 border-b cursor-pointer rounded-t-xl" onclick="toggleInfo()">
+                <h3 id="info-title" class="font-bold text-gray-800 truncate pr-2"></h3>
+                <div class="flex gap-3 text-gray-400">
+                    <button id="toggle-icon" class="hover:text-blue-500 transition-transform duration-300"><i class="fas fa-chevron-up"></i></button>
+                    <button onclick="event.stopPropagation(); closeInfo()" class="hover:text-red-500 transition-colors"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <!-- Content Body -->
+            <div id="info-content" class="text-sm text-gray-600 space-y-2 max-h-[60vh] overflow-y-auto p-4 bg-white rounded-b-xl"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        // --- 1. DATA: Locations & Detailed POIs ---
+        const LOC = {
+            kix: [34.4325, 135.2304],
+            nambaStn: [34.6618, 135.5021],
+            osakaHotel: [34.6634, 135.4975], 
+            tendonMakino: [34.6682, 135.5036],
+            dendenTown: [34.6593, 135.5057],
+            glicoMan: [34.6687, 135.5013],
+            kuromon: [34.6654, 135.5074],
+            aburiya: [34.6690, 135.5015],
+            dotonbori: [34.6687, 135.5013],
+            sumibi: [34.6675, 135.5000],
+            usj: [34.6654, 135.4323],
+            fukutaro: [34.6657, 135.5042],
+            fushimiInari: [34.9671, 135.7726],
+            yamamoto: [35.0157, 135.7825],
+            kiyomizu: [34.9948, 135.7850],
+            sannenzaka: [34.9960, 135.7820],
+            kamoRiver: [35.0080, 135.7710],
+            hideatora: [35.0050, 135.7700],
+            pontocho: [35.0062, 135.7716],
+            gion: [35.0035, 135.7750],
+            yasohachi: [35.0055, 135.7710],
+            shinOsaka: [34.7334, 135.5003],
+            tokyoStn: [35.6812, 139.7671],
+            uenoHotel: [35.7122, 139.7758],
+            kappabashi: [35.7153, 139.7895],
+            sensoji: [35.7147, 139.7966],
+            akihabara: [35.6983, 139.7730],
+            ameyoko: [35.7088, 139.7741],
+            honda: [35.6997, 139.7754], 
+            hotate: [35.6963, 139.7856], 
+            gigo: [35.6994, 139.7712] 
+        };
+
+        const POIS = {
+            denden: [
+                { name: "조신 슈퍼 키즈 랜드", pos: [34.6595, 135.5055] },
+                { name: "정글 (Jungle)", pos: [34.6600, 135.5060] },
+                { name: "슈퍼 포테이토", pos: [34.6610, 135.5058] },
+                { name: "애니메이트", pos: [34.6605, 135.5050] },
+                { name: "스루가야", pos: [34.6590, 135.5052] },
+                { name: "라신반", pos: [34.6598, 135.5056] },
+                { name: "오타로드", pos: [34.6590, 135.5065] }
+            ],
+            kuromon: [
+                { name: "마구로야 쿠로긴(참치)", pos: [34.6655, 135.5075] },
+                { name: "가리비&장어 구이", pos: [34.6653, 135.5073] },
+                { name: "마루젠 식육점", pos: [34.6652, 135.5072] },
+                { name: "화이트 딸기", pos: [34.6650, 135.5076] }
+            ],
+            usj: [
+                { name: "슈퍼 닌텐도 월드", pos: [34.6660, 135.4290] },
+                { name: "위저딩 월드 (해리포터)", pos: [34.6640, 135.4280] },
+                { name: "미니언 파크", pos: [34.6620, 135.4310] },
+                { name: "쥬라기 공원", pos: [34.6625, 135.4300] }
+            ],
+            fushimi: [
+                { name: "센본 토리이", pos: [34.9665, 135.7750] },
+                { name: "오쿠샤 봉배소", pos: [34.9660, 135.7760] },
+                { name: "곰의 숲 (쿠마타카샤)", pos: [34.9655, 135.7780] },
+                { name: "요츠츠지", pos: [34.9650, 135.7800] }
+            ],
+            kiyomizu: [
+                { name: "본당 (무대)", pos: [34.9948, 135.7850] },
+                { name: "오토와 폭포", pos: [34.9945, 135.7852] }
+            ],
+            sannenzaka: [
+                { name: "스타벅스 (다다미)", pos: [34.9985, 135.7805] },
+                { name: "동구리 공화국", pos: [34.9965, 135.7815] },
+                { name: "마르블랑슈 (차노카)", pos: [34.9958, 135.7825] },
+                { name: "요지야", pos: [34.9962, 135.7818] },
+                { name: "시치미야 혼포", pos: [34.9955, 135.7828] },
+                { name: "이노다 커피", pos: [34.9960, 135.7810] },
+                { name: "오카루 (카레우동)", pos: [35.0038, 135.7745] } 
+            ],
+            kamo_cafes: [
+                { name: "스타벅스 산조오하시", pos: [35.0090, 135.7718] },
+                { name: "카와 카페 (Kawa)", pos: [35.0015, 135.7705] },
+                { name: "살롱 드 로얄", pos: [35.0110, 135.7715] },
+                { name: ".S (닷 에스)", pos: [35.0130, 135.7725] },
+                { name: "와이프 앤 허즈번드", pos: [35.0450, 135.7590] }
+            ],
+            gion: [
+                { name: "하나미코지 (메인)", pos: [35.0035, 135.7750] },
+                { name: "야사카 신사", pos: [35.0036, 135.7785] },
+                { name: "기온 츠지리 (파르페)", pos: [35.0038, 135.7742] },
+                { name: "카기젠 요시후사", pos: [35.0039, 135.7748] },
+                { name: "기온 키나나", pos: [35.0025, 135.7755] },
+                { name: "타츠미 다리", pos: [35.0055, 135.7735] },
+                { name: "미나미좌 (극장)", pos: [35.0040, 135.7725] }
+            ],
+            pontocho: [
+                { name: "폰토초 골목", pos: [35.0062, 135.7716] },
+                { name: "유즈겐 (유자나베)", pos: [35.0058, 135.7715] },
+                { name: "모츠나베 토라야", pos: [35.0060, 135.7715] },
+                { name: "교토 야키니쿠 엔엔", pos: [35.0045, 135.7712] },
+                { name: "갓파 스시", pos: [35.0050, 135.7713] }
+            ],
+            sensoji: [
+                { name: "카미나리몬 (제등)", pos: [35.7111, 139.7964] },
+                { name: "호조몬", pos: [35.7138, 139.7966] },
+                { name: "본당 (관음당)", pos: [35.7147, 139.7966] },
+                { name: "오층탑", pos: [35.7142, 139.7958] },
+                { name: "아사쿠사 신사", pos: [35.7150, 139.7972] },
+                { name: "오미쿠지 구역", pos: [35.7144, 139.7962] },
+                { name: "나데보토케", pos: [35.7145, 139.7960] },
+                { name: "키무라야 (인형빵)", pos: [35.7140, 139.7965] },
+                { name: "키비당고 아즈마", pos: [35.7125, 139.7965] },
+                { name: "아사쿠사 코코노에", pos: [35.7141, 139.7965] },
+                { name: "화월당 (메론빵)", pos: [35.7135, 139.7950] },
+                { name: "실크 푸딩", pos: [35.7118, 139.7968] },
+                { name: "후나와 (양갱)", pos: [35.7120, 139.7964] },
+                { name: "쵸칭 모나카", pos: [35.7128, 139.7965] }
+            ],
+            ameyoko: [
+                { name: "시무라 쇼텐 (초콜릿)", pos: [35.7095, 139.7745] },
+                { name: "니쿠노 오오야마", pos: [35.7100, 139.7742] },
+                { name: "미나토야 (덮밥)", pos: [35.7092, 139.7743] },
+                { name: "다이토류 (이자카야)", pos: [35.7098, 139.7744] },
+                { name: "야키토리 분라쿠", pos: [35.7097, 139.7744] },
+                { name: "햐카엔 (과일)", pos: [35.7090, 139.7742] },
+                { name: "ABC마트 본점", pos: [35.7088, 139.7745] },
+                { name: "니키의 과자", pos: [35.7085, 139.7743] }
+            ],
+            kappabashi: [
+                { name: "니이미 식기", pos: [35.7100, 139.7900] },
+                { name: "음식 모형", pos: [35.7140, 139.7890] },
+                { name: "카마아사 상점", pos: [35.7130, 139.7895] }
+            ],
+            akihabara: [
+                { name: "라디오 회관", pos: [35.6980, 139.7720] },
+                { name: "게이머즈 본점", pos: [35.6982, 139.7725] },
+                { name: "만다라케", pos: [35.7000, 139.7710] },
+                { name: "애니메이트", pos: [35.7005, 139.7715] },
+                { name: "트레이더 본점", pos: [35.7010, 139.7718] },
+                { name: "스루가야", pos: [35.6990, 139.7715] },
+                { name: "HEY 아케이드", pos: [35.6995, 139.7705] },
+                { name: "GIGO 3호관", pos: [35.6992, 139.7710] }
+            ]
+        };
+
+        const RAW_DATA = [
+            {
+                day: 1,
+                items: [
+                    { time: "04:00 - 06:00", title: "기상 및 공항 출발", loc: null, desc: "취침 후 기상" },
+                    { time: "06:00 - 09:30", title: "공항 도착 및 비행", loc: LOC.kix, desc: "탑승 수속 및 비행" },
+                    { time: "09:30 - 09:43", title: "간사이 공항 (표 구매)", price: 980, loc: LOC.kix, desc: "난카이 공항선 티켓팅" },
+                    { time: "10:34 - 10:50", title: "난바역 도착 (짐 보관)", loc: LOC.nambaStn, desc: "숙소 이동 전 준비" },
+                    { time: "10:50 - 11:05", title: "숙소 이동", loc: LOC.osakaHotel, desc: "세븐일레븐 오사카 모토마치" },
+                    { time: "11:05 - 12:25", title: "점심: 텐동 마키노", price: 2400, loc: LOC.tendonMakino, desc: "웨이팅 및 붕장어 텐동" },
+                    { time: "12:40 - 14:45", title: "덴덴타운 덕질 투어", loc: LOC.dendenTown, pois: POIS.denden, desc: "키즈랜드, 정글, 오타로드" },
+                    { time: "14:45 - 15:00", title: "난바역 복귀", loc: LOC.nambaStn, desc: "후발대 합류" },
+                    { time: "15:15 - 16:15", title: "글리코상 & 도톤보리", loc: LOC.glicoMan, desc: "메인 포토존" },
+                    { time: "16:15 - 16:45", title: "맛집 간판 투어", loc: LOC.dotonbori, pois: POIS.dotonbori_views, desc: "카니도라쿠, 킨류 등" },
+                    { time: "16:45 - 17:45", title: "구로몬 시장", loc: LOC.kuromon, pois: POIS.kuromon, price: 1500, desc: "참치, 가리비, 화이트 딸기" },
+                    { time: "18:00 - 19:30", title: "저녁: 아부리야", price: 4900, loc: LOC.aburiya, desc: "야키니쿠 무한리필" },
+                    { time: "19:30 - 21:00", title: "도톤보리 야경", loc: LOC.dotonbori, price: 1000, desc: "간식 및 산책" },
+                    { time: "21:00 - 22:00", title: "야식: 스미비야키토리토", price: 2000, loc: LOC.sumibi, desc: "꼬치구이" },
+                    { time: "22:15", title: "숙소 복귀", loc: LOC.osakaHotel }
+                ]
+            },
+            {
+                day: 2,
+                items: [
+                    { time: "05:00 - 06:00", title: "기상 및 준비", loc: LOC.osakaHotel, desc: "USJ 오픈런 준비" },
+                    { time: "06:15", title: "난바역 출발", loc: LOC.nambaStn, desc: "한신선 탑승" },
+                    { time: "07:15 - 19:30", title: "USJ 유니버설 스튜디오", loc: LOC.usj, pois: POIS.usj, price: 11000, desc: "닌텐도, 해리포터, 미니언 등 풀코스" },
+                    { time: "20:30 - 22:00", title: "저녁: 후쿠타로 본점", loc: LOC.fukutaro, price: 2500, desc: "오코노미야키 맛집 (웨이팅 주의)" },
+                    { time: "22:30", title: "숙소 복귀", loc: LOC.osakaHotel }
+                ]
+            },
+            {
+                day: 3,
+                items: [
+                    { time: "06:00 - 07:00", title: "기상 및 아침식사", loc: LOC.nambaStn, price: 780, desc: "신파치 식당 등" },
+                    { time: "08:45 - 10:15", title: "후시미 이나리 신사", loc: LOC.fushimiInari, pois: POIS.fushimi, desc: "천개의 토리이, 오쿠샤 봉배소" },
+                    { time: "10:15 - 12:30", title: "점심: 야마모토 멘조우", loc: LOC.yamamoto, price: 1200, desc: "우동 맛집 (예약필수)" },
+                    { time: "13:00 - 14:30", title: "기요미즈테라 (청수사)", loc: LOC.kiyomizu, pois: POIS.kiyomizu, price: 400, desc: "본당 무대, 오토와 폭포" },
+                    { time: "14:30 - 15:30", title: "산넨자카 & 니넨자카", loc: LOC.sannenzaka, pois: POIS.sannenzaka, desc: "스타벅스 다다미, 동구리 공화국 등" },
+                    { time: "16:00 - 16:50", title: "가모강 카페 피크닉", loc: LOC.kamoRiver, pois: POIS.kamo_cafes, price: 700, desc: "스타벅스/블루보틀 테이크아웃, 강변 휴식" },
+                    { time: "16:50 - 18:00", title: "저녁1: 쿄 모츠나베", loc: LOC.hideatora, price: 3500, desc: "히데토라 백된장 나베" },
+                    { time: "18:00 - 19:30", title: "기온 & 폰토초 거리", loc: LOC.gion, pois: [...POIS.gion, ...POIS.pontocho], desc: "하나미코지, 야사카신사, 폰토초 골목" },
+                    { time: "19:30 - 20:30", title: "저녁2: 폰토쵸 야소하치", loc: LOC.yasohachi, price: 3000, desc: "교토 분위기 이자카야" },
+                    { time: "22:00", title: "오사카 복귀", loc: LOC.osakaHotel, price: 2000, desc: "라운드원 등 선택" }
+                ]
+            },
+            {
+                day: 4,
+                items: [
+                    { time: "09:00 - 10:20", title: "기상 및 아침(코메다)", loc: LOC.nambaStn, price: 800, desc: "모닝 세트" },
+                    { time: "10:20", title: "신오사카역 이동", loc: LOC.shinOsaka, price: 230 },
+                    { time: "13:33", title: "도쿄역 도착 (신칸센)", loc: LOC.tokyoStn, price: 14500, desc: "에키벤 점심" },
+                    { time: "14:00", title: "우에노 숙소 (짐)", loc: LOC.uenoHotel, desc: "체크인/보관" },
+                    { time: "14:20 - 15:20", title: "갓파바시 도구거리", loc: LOC.kappabashi, pois: POIS.kappabashi, desc: "요리 도구 쇼핑" },
+                    { time: "15:40 - 17:00", title: "센소지 & 나카미세도리", loc: LOC.sensoji, pois: POIS.sensoji, desc: "카미나리몬, 멘치카츠, 메론빵 등" },
+                    { time: "17:30 - 18:30", title: "아키하바라 탐방", loc: LOC.akihabara, pois: POIS.akihabara, desc: "라디오회관, 만다라케, 트레이더" },
+                    
+                    // SPLIT DINNER
+                    { 
+                        time: "18:30 - 19:30", 
+                        title: "저녁: 라멘 (팀 분리)", 
+                        type: "split_dinner",
+                        routes: [
+                            { name: "A팀: 멘도코로 혼다", to: LOC.honda, color: "#ef4444", desc: "쇼유 라멘" },
+                            { name: "B팀: 호타테 비요리", to: LOC.hotate, color: "#22c55e", desc: "가리비 라멘" }
+                        ],
+                        price: 1300,
+                        desc: "각자 웨이팅 후 식사"
+                    },
+
+                    { 
+                        time: "19:30 - 20:30", 
+                        title: "GIGO & 가챠폰", 
+                        loc: LOC.gigo,
+                        type: "merge", 
+                        froms: [LOC.honda, LOC.hotate], 
+                        desc: "다시 합류하여 게임 및 가챠",
+                        price: 2000
+                    },
+                    { time: "20:30 - 21:00", title: "아메요코 시장", loc: LOC.ameyoko, pois: POIS.ameyoko, desc: "니키의 과자, 멘치카츠 등 구경" },
+                    { time: "21:00", title: "이자카야 뒷풀이", loc: LOC.ameyoko, price: 3500, desc: "여행 마무리" }
+                ]
+            }
+        ];
+
+        // --- 2. LOGIC ---
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function preprocessSchedule(rawData) {
+            const processed = [];
+            rawData.forEach(day => {
+                const newItems = [];
+                for(let i = 0; i < day.items.length; i++) {
+                    const curr = day.items[i];
+                    const currLoc = curr.loc || (curr.type === 'split_dinner' ? LOC.akihabara : null);
+                    
+                    newItems.push({ ...curr, type: curr.type || 'stay' });
+
+                    if (i < day.items.length - 1) {
+                        const next = day.items[i+1];
+                        const nextLoc = next.loc || (next.type === 'split_dinner' ? LOC.akihabara : null);
+                        
+                        if (currLoc && nextLoc && next.type !== 'merge') { 
+                            const dist = getDistance(currLoc[0], currLoc[1], nextLoc[0], nextLoc[1]);
+                            if (dist > 0.15) { 
+                                const isTrain = dist > 1.8;
+                                // Parse departure time from current item's end time
+                                const endTime = curr.time ? curr.time.split(' - ')[1] : "";
+                                const departureText = endTime ? `${endTime} 출발` : "이동";
+
+                                newItems.push({
+                                    title: departureText,
+                                    type: 'move',
+                                    transport: isTrain ? 'train' : 'walk',
+                                    from: currLoc,
+                                    to: nextLoc,
+                                    price: isTrain ? 170 : 0,
+                                    dist: dist.toFixed(1),
+                                    time: "",
+                                    desc: isTrain ? `전철/버스 권장 (${dist.toFixed(1)}km)` : `도보 이동 (${dist.toFixed(1)}km)`
+                                });
+                            }
+                        }
+                    }
+                }
+                processed.push({ day: day.day, items: newItems });
+            });
+            return processed;
+        }
+
+        const SCHEDULE = preprocessSchedule(RAW_DATA);
+
+        // --- 3. MAP ---
+        const map = L.map('map', { zoomControl: false }).setView([34.6618, 135.5021], 13);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; CARTO', maxZoom: 19
+        }).addTo(map);
+
+        let layers = [];
+        const icons = {
+            start: L.divIcon({ html: '<div class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg border-2 border-white">S</div>', className: 'bg-transparent', iconSize: [32, 32], iconAnchor: [16, 32] }),
+            end: L.divIcon({ html: '<div class="bg-slate-700 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg border-2 border-white">E</div>', className: 'bg-transparent', iconSize: [32, 32], iconAnchor: [16, 32] }),
+            poi: L.divIcon({ className: 'pulse-icon' }),
+            poiBlue: L.divIcon({ className: 'pulse-icon-blue' }),
+            splitA: L.divIcon({ html: '<div class="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white">A</div>', className: 'bg-transparent', iconSize: [24,24] }),
+            splitB: L.divIcon({ html: '<div class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white">B</div>', className: 'bg-transparent', iconSize: [24,24] })
+        };
+
+        async function drawRoute(from, to, color = '#3b82f6') {
+            const dashed = L.polyline([from, to], { color: '#cbd5e1', weight: 4, dashArray: '8, 8', opacity: 0.8 }).addTo(map);
+            layers.push(dashed);
+            
+            try {
+                const resp = await fetch(`https://router.project-osrm.org/route/v1/foot/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson`);
+                const data = await resp.json();
+                if(data.code === 'Ok') {
+                    const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                    map.removeLayer(dashed);
+                    const route = L.polyline(coords, { color: color, weight: 5, opacity: 0.8, lineJoin: 'round' }).addTo(map);
+                    layers.push(route);
+                    map.fitBounds(route.getBounds(), { padding: [50, 50] });
+                }
+            } catch(e) {}
+        }
+
+        // --- 4. TOGGLE UI FUNCTIONS ---
+        function toggleInfo() {
+            const content = document.getElementById('info-content');
+            const icon = document.getElementById('toggle-icon');
+            const isCollapsed = content.classList.contains('collapsed-content');
+            
+            if(isCollapsed) {
+                // Expand
+                content.classList.remove('collapsed-content');
+                icon.classList.remove('rotate-180');
+            } else {
+                // Collapse
+                content.classList.add('collapsed-content');
+                icon.classList.add('rotate-180');
+            }
+        }
+
+        function closeInfo() {
+            document.getElementById('map-info').classList.add('hidden', 'opacity-0', 'translate-y-[-20px]');
+        }
+
+        // --- 5. RENDER ---
+        function formatMoney(n) { return n ? `¥${n.toLocaleString()}` : ''; }
+
+        function renderTimeline(dayIdx) {
+            const list = document.getElementById('schedule-list');
+            const dayData = SCHEDULE[dayIdx];
+            list.innerHTML = '';
+            
+            document.getElementById('split-legend').classList.toggle('hidden', dayIdx !== 3);
+            let total = 0; dayData.items.forEach(i => total += (i.price||0));
+            document.getElementById('total-cost-desktop').innerText = `총 예상 비용: ${formatMoney(total)}`;
+            document.getElementById('total-cost-mobile').innerText = `Total: ${formatMoney(total)}`;
+
+            dayData.items.forEach((item) => {
+                const isMove = item.type === 'move';
+                const isSplit = item.type === 'split_dinner';
+                
+                const card = document.createElement('div');
+                card.className = `schedule-item p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 cursor-pointer relative bg-white my-2 ${isMove ? 'bg-slate-50 border-dashed opacity-80' : ''}`;
+                
+                // Icon Construction
+                let iconEl = `<div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center"><i class="fas fa-map-pin"></i></div>`;
+                if(item.title.includes('기상')) iconEl = `<div class="w-10 h-10 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center"><i class="fas fa-sun"></i></div>`;
+                else if(isMove) iconEl = `<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-${item.transport === 'train' ? 'train' : 'person-walking'}"></i></div>`;
+                else if(item.title.includes('식사') || item.title.includes('저녁')) iconEl = `<div class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center"><i class="fas fa-utensils"></i></div>`;
+                else if(isSplit) iconEl = `<div class="w-10 h-10 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center"><i class="fas fa-code-branch"></i></div>`;
+
+                let timeStr = item.time ? item.time.split(' - ')[0] : '';
+                // If it's a move item, show Departure time clearly
+                if (isMove && item.title.includes('출발')) timeStr = item.title.split(' ')[0];
+
+                let content = `<div class="flex items-center gap-3">`;
+                content += `<div class="flex flex-col items-center gap-1 min-w-[50px]"><span class="text-[10px] font-bold text-gray-500">${timeStr}</span>${iconEl}</div>`;
+                content += `<div class="flex-1 min-w-0"><div class="flex justify-between items-start"><h4 class="font-bold text-gray-800 truncate ${isMove ? 'text-sm text-gray-500' : ''}">${item.title}</h4>`;
+                if(item.price) content += `<span class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold ml-1 shrink-0">${formatMoney(item.price)}</span>`;
+                content += `</div>`;
+                
+                if(item.desc) content += `<p class="text-xs text-gray-500 mt-1 truncate">${item.desc}</p>`;
+                if(isMove && item.dist) content += `<p class="text-[10px] text-blue-500 font-semibold mt-0.5"><i class="fas fa-route"></i> ${item.dist}km 이동</p>`;
+                
+                if(isSplit) content += `<div class="flex gap-2 mt-2"><span class="text-[10px] px-2 py-1 rounded border split-badge-a flex-1 text-center">A: 혼다</span><span class="text-[10px] px-2 py-1 rounded border split-badge-b flex-1 text-center">B: 호타테</span></div>`;
+                content += `</div></div>`;
+                card.innerHTML = content;
+
+                card.onclick = () => {
+                    document.querySelectorAll('.schedule-item').forEach(e => e.classList.remove('active-card'));
+                    card.classList.add('active-card');
+                    layers.forEach(l => map.removeLayer(l)); layers = [];
+                    
+                    // Show & Reset Info Box State
+                    const infoBox = document.getElementById('map-info');
+                    const infoContent = document.getElementById('info-content');
+                    const toggleIcon = document.getElementById('toggle-icon');
+                    
+                    infoBox.classList.remove('hidden', 'opacity-0', 'translate-y-[-20px]');
+                    // Ensure it is open when clicked
+                    infoContent.classList.remove('collapsed-content');
+                    toggleIcon.classList.remove('rotate-180');
+
+                    document.getElementById('info-title').innerText = item.title;
+                    
+                    let infoHtml = `<p class="mb-2">${item.desc || ''}</p>`;
+
+                    // Visualization Logic
+                    if (isSplit) {
+                        const start = LOC.akihabara;
+                        item.routes.forEach(r => {
+                            drawRoute(start, r.to, r.color);
+                            layers.push(L.marker(r.to, {icon: r.name.includes('A')?icons.splitA:icons.splitB}).addTo(map).bindPopup(r.name));
+                        });
+                        layers.push(L.marker(start, {icon: icons.start}).addTo(map));
+                    } else if (item.type === 'merge') {
+                        item.froms.forEach((f, idx) => {
+                            drawRoute(f, item.loc, idx===0?'#ef4444':'#22c55e');
+                            layers.push(L.marker(f, {icon: idx===0?icons.splitA:icons.splitB}).addTo(map));
+                        });
+                        layers.push(L.marker(item.loc, {icon: icons.end}).addTo(map).bindPopup("GIGO 집결"));
+                    } else if (isMove) {
+                        drawRoute(item.from, item.to, item.transport==='train'?'#8b5cf6':'#3b82f6');
+                        layers.push(L.marker(item.from, {icon: icons.start}).addTo(map));
+                        layers.push(L.marker(item.to, {icon: icons.end}).addTo(map));
+                    } else {
+                        if(item.loc) {
+                            map.setView(item.loc, 15);
+                            layers.push(L.marker(item.loc, {icon: icons.start}).addTo(map));
+                        }
+                        if(item.pois) {
+                            const bounds = L.latLngBounds(item.pois.map(p => p.pos));
+                            item.pois.forEach(p => {
+                                layers.push(L.marker(p.pos, {icon: icons.poi}).addTo(map).bindTooltip(p.name, {permanent:true, direction:'top', className:'text-xs font-bold bg-white border px-1 rounded shadow'}));
+                            });
+                            map.fitBounds(bounds, {padding:[50,50]});
+                            
+                            // Generate POI list in Info Box
+                            infoHtml += `<div class="grid grid-cols-2 gap-1 mt-2">`;
+                            item.pois.forEach(p => infoHtml += `<span class="text-xs bg-gray-50 px-2 py-1 rounded border">📍 ${p.name}</span>`);
+                            infoHtml += `</div>`;
+                        }
+                    }
+                    document.getElementById('info-content').innerHTML = infoHtml;
+                };
+                list.appendChild(card);
+            });
+        }
+
+        function selectDay(idx) {
+            [0,1,2,3].forEach(i => {
+                const btn = document.getElementById(`tab-${i}`);
+                if(i===idx) { btn.classList.add('text-indigo-600','border-indigo-600'); btn.classList.remove('text-gray-500'); }
+                else { btn.classList.remove('text-indigo-600','border-indigo-600'); btn.classList.add('text-gray-500'); }
+            });
+            layers.forEach(l => map.removeLayer(l)); layers = [];
+            document.getElementById('map-info').classList.add('hidden');
+            renderTimeline(idx);
+            
+            const first = SCHEDULE[idx].items.find(i => i.loc);
+            if(first) map.setView(first.loc, 13);
+        }
+
+        selectDay(0);
+    </script>
+</body>
+</html>
+
