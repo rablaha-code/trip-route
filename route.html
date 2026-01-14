@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
+<!DOCTYPE html><html lang="ko"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>일본 여행 일정 (Multi-Select Route)</title>
+    <title>일본 여행 일정</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -37,6 +35,7 @@
         
         .split-badge-a { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
         .split-badge-b { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .split-badge-shop { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
         
         /* Custom Popup */
         .leaflet-popup-content-wrapper { border-radius: 12px; padding: 0; overflow: hidden; }
@@ -61,30 +60,79 @@
             text-align: center; line-height: 24px; font-weight: bold;
             font-size: 14px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-    </style>
-</head>
-<body class="bg-slate-100 h-screen flex flex-col md:flex-row overflow-hidden">
+
+        /* Team Toggle Switch */
+        .team-toggle {
+            transition: all 0.3s ease;
+        }
+        .team-active {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        .team-inactive {
+            background-color: white;
+            color: #6b7280;
+            border-color: #d1d5db;
+        }
+
+        /* --- [NEW] Resizer Styles --- */
+        #resizer {
+            background-color: #cbd5e1;
+            z-index: 50;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #resizer:hover { background-color: #94a3b8; }
+        
+        /* Mobile: Horizontal Bar */
+        @media (max-width: 768px) {
+            #resizer { width: 100%; height: 12px; cursor: row-resize; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+            #resizer i { transform: rotate(0deg); }
+        }
+        
+        /* Desktop: Vertical Bar */
+        @media (min-width: 768px) {
+            #resizer { width: 12px; height: 100%; cursor: col-resize; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; }
+            #resizer i { transform: rotate(90deg); }
+        }
+    </style></head><body class="bg-slate-100 h-screen flex flex-col md:flex-row overflow-hidden">
 
     <div class="md:hidden bg-indigo-600 text-white p-3 shadow-md z-20 flex justify-between items-center shrink-0">
-        <h1 class="font-bold text-lg">🇯🇵 3박 4일 일정표</h1>
+        <h1 class="font-bold text-lg">🇯🇵 5박 7일 일정표</h1>
         <span id="total-cost-mobile" class="text-xs bg-indigo-700 px-2 py-1 rounded font-mono"></span>
     </div>
 
-    <div class="w-full md:w-1/3 flex flex-col h-1/2 md:h-full bg-white shadow-xl z-10 relative">
+    <div id="sidebar-panel" class="w-full md:w-[35%] h-[50%] md:h-full flex flex-col bg-white shadow-xl z-10 relative min-w-[200px] min-h-[150px]">
         <div class="hidden md:block p-5 bg-indigo-600 text-white shadow-md shrink-0">
             <h1 class="text-2xl font-bold">🇯🇵 Japan Travel</h1>
-            <p class="text-indigo-100 text-sm mt-1">오사카 • 교토 • 도쿄 (1일차 ~ 4일차)</p>
+            <p class="text-indigo-100 text-sm mt-1">오사카 • 교토 • 도쿄 (1일차 ~ 7일차)</p>
             <div class="mt-3 flex justify-between items-center">
                 <div id="total-cost-desktop" class="bg-indigo-800 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wide"></div>
                 <button onclick="clearSelection()" id="btn-reset-select" class="hidden text-xs bg-white text-indigo-600 px-2 py-1 rounded font-bold hover:bg-gray-100">선택 초기화</button>
             </div>
         </div>
 
-        <div class="flex overflow-x-auto bg-white border-b shrink-0">
-            <button onclick="selectDay(0)" id="tab-0" class="flex-1 py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">1일차<br><span class="text-xs font-normal">오사카</span></button>
-            <button onclick="selectDay(1)" id="tab-1" class="flex-1 py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">2일차<br><span class="text-xs font-normal">USJ</span></button>
-            <button onclick="selectDay(2)" id="tab-2" class="flex-1 py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">3일차<br><span class="text-xs font-normal">교토</span></button>
-            <button onclick="selectDay(3)" id="tab-3" class="flex-1 py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">4일차<br><span class="text-xs font-normal">도쿄</span></button>
+        <div class="flex overflow-x-auto bg-white border-b shrink-0 scrollbar-hide whitespace-nowrap">
+            <button onclick="selectDay(0)" id="tab-0" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">1일차<br><span class="text-xs font-normal">오사카</span></button>
+            <button onclick="selectDay(1)" id="tab-1" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">2일차<br><span class="text-xs font-normal">USJ</span></button>
+            <button onclick="selectDay(2)" id="tab-2" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">3일차<br><span class="text-xs font-normal">교토</span></button>
+            <button onclick="selectDay(3)" id="tab-3" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">4일차<br><span class="text-xs font-normal">도쿄</span></button>
+            <button onclick="selectDay(4)" id="tab-4" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">5일차<br><span class="text-xs font-normal">자유</span></button>
+            <button onclick="selectDay(5)" id="tab-5" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">6일차<br><span class="text-xs font-normal">팀 분리</span></button>
+            <button onclick="selectDay(6)" id="tab-6" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">7일차<br><span class="text-xs font-normal">나카노</span></button>
+        </div>
+
+        <div id="team-selector" class="hidden p-2 bg-slate-50 border-b flex justify-center gap-2 shrink-0">
+            <button onclick="selectTeam('attraction')" id="btn-team-attraction" class="team-toggle team-active px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm">
+                🎢 어트랙션 팟 (5명)
+            </button>
+            <button onclick="selectTeam('shopping')" id="btn-team-shopping" class="team-toggle team-inactive px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm">
+                🛍️ 쇼핑 팟 (3명)
+            </button>
         </div>
 
         <div id="schedule-list" class="flex-1 overflow-y-auto p-2 md:p-4 space-y-3 bg-slate-50 pb-20 md:pb-5"></div>
@@ -94,12 +142,14 @@
         </div>
 
         <div id="split-legend" class="absolute bottom-0 w-full bg-white border-t p-2 text-xs flex justify-around hidden shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
-            <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>A팀: 멘도코로 혼다</span></div>
-            <div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full"></span> <span>B팀: 호타테 비요리</span></div>
         </div>
     </div>
 
-    <div class="w-full md:w-2/3 h-1/2 md:h-full relative">
+    <div id="resizer">
+        <i class="fas fa-grip-lines text-gray-500 text-xs"></i>
+    </div>
+
+    <div id="map-container" class="flex-1 w-full h-[50%] md:h-full relative min-w-[100px] min-h-[100px]">
         <div id="map"></div>
         
         <div id="map-info" class="absolute top-5 right-5 bg-white rounded-xl shadow-2xl hidden md:flex flex-col z-[400] w-80 border border-gray-100 transition-all duration-300 opacity-0 translate-y-[-20px]">
@@ -117,7 +167,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // --- 1. DATA: Locations & Detailed POIs (Same as before) ---
+        // --- 1. DATA: Locations & Detailed POIs ---
         const LOC = {
             kix: [34.4325, 135.2304],
             nambaStn: [34.6618, 135.5021],
@@ -143,14 +193,44 @@
             roundOne: [34.6653, 135.5039],
             shinOsaka: [34.7334, 135.5003],
             tokyoStn: [35.6812, 139.7671],
-            uenoHotel: [35.7122, 139.7758],
+            uenoHotel: [35.7225, 139.7828],
             kappabashi: [35.7153, 139.7895],
             sensoji: [35.7147, 139.7966],
             akihabara: [35.6983, 139.7730],
             ameyoko: [35.7088, 139.7741],
             honda: [35.6997, 139.7754], 
             hotate: [35.6963, 139.7856], 
-            gigo: [35.6994, 139.7712] 
+            gigo: [35.6994, 139.7712],
+            iriyaStn: [35.7210, 139.7845],
+            kamiyachoStn: [35.6627, 139.7451],
+            zojoji: [35.6574, 139.7482],
+            azabudai: [35.6605, 139.7410],
+            odaibaStn: [35.6293, 139.7766],
+            decks: [35.6295, 139.7750],
+            diverCity: [35.6252, 139.7756],
+            immersive: [35.6245, 139.7800],
+            tokyoTeleport: [35.6264, 139.7797],
+            shinjukuStn: [35.6909, 139.7005],
+            motomura: [35.6925, 139.7020],
+            mysteryCircus: [35.6945, 139.7015],
+            kabukicho: [35.6950, 139.7030],
+            uguisudani: [35.7215, 139.7780],
+            shibuyaStn: [35.6580, 139.7016],
+            parco: [35.6620, 139.6987],
+            miyashita: [35.6615, 139.7020],
+            shibuyaSky: [35.6585, 139.7023], 
+            omotesando: [35.6652, 139.7123],
+            harajuku: [35.6702, 139.7026],
+            // [NEW] Day 7 Locations
+            nakanoStn: [35.7058, 139.6658],
+            nakanoBroadway: [35.7089, 139.6657],
+            radioKaikan: [35.6980, 139.7720],
+            traderHQ: [35.7010, 139.7718],
+            melonbooks: [35.6990, 139.7715],
+            gogoCurry: [35.6985, 139.7745],
+            sanbo: [35.7005, 139.7710],
+            surugayaDeep: [35.6990, 139.7715],
+            akibaLocker: [35.6984, 139.7731]
         };
 
         const POIS = {
@@ -269,6 +349,61 @@
                 { name: "스루가야", pos: [35.6990, 139.7715] },
                 { name: "HEY 아케이드", pos: [35.6995, 139.7705] },
                 { name: "GIGO 3호관", pos: [35.6992, 139.7710] }
+            ],
+            zojoji_view: [
+                { name: "조조지 본당", pos: [35.6574, 139.7482] },
+                { name: "도쿄타워 포토존 (계단)", pos: [35.6565, 139.7490] },
+                { name: "시바 공원 (피크닉 뷰)", pos: [35.6555, 139.7495] }
+            ],
+            shinjuku_night: [
+                { name: "고질라 헤드 (그레이스리)", pos: [35.6953, 139.7028] },
+                { name: "오모이데 요코초 (꼬치)", pos: [35.6930, 139.6995] },
+                { name: "골든가이", pos: [35.6942, 139.7047] },
+                { name: "돈키호테 가부키초", pos: [35.6940, 139.7025] }
+            ],
+            shibuya_attract: [
+                 { name: "닌텐도 도쿄 (Parco 6F)", pos: [35.6620, 139.6987] },
+                 { name: "점프샵 (Parco 6F)", pos: [35.6620, 139.6987] },
+                 { name: "포켓몬 센터", pos: [35.6620, 139.6987] },
+                 { name: "휴먼 메이드 (Parco 1F)", pos: [35.6620, 139.6987] },
+                 { name: "Kith Tokyo (Miyashita)", pos: [35.6615, 139.7020] },
+                 { name: "미야시타 공원 (옥상)", pos: [35.6615, 139.7020] }
+            ],
+            omotesando_shop: [
+                 { name: "오모테산도 힐즈", pos: [35.6670, 139.7100] },
+                 { name: "메종 키츠네", pos: [35.6650, 139.7130] },
+                 { name: "애플 오모테산도", pos: [35.6655, 139.7125] },
+                 { name: "자이레(GYRE)", pos: [35.6665, 139.7075] },
+                 { name: "키디랜드 (캐릭터)", pos: [35.6675, 139.7065] },
+                 { name: "도큐 플라자 (입구)", pos: [35.6695, 139.7030] },
+                 { name: "슈프림 하라주쿠", pos: [35.6705, 139.7035] }
+            ],
+            azabudai_shops: [
+                { name: "% 아라비카 (B1)", pos: [35.6605, 139.7410] },
+                { name: "펠리칸 카페", pos: [35.6605, 139.7410] },
+                { name: "하브스 (케이크)", pos: [35.6605, 139.7410] },
+                { name: "팀랩 매표소", pos: [35.6608, 139.7408] }
+            ],
+            // [NEW] Day 7 Detailed POIs
+            nakano_detailed: [
+                { name: "만다라케 본점 (3F)", pos: [35.7089, 139.6657] },
+                { name: "만다라케 스페셜 (2F)", pos: [35.7089, 139.6657] },
+                { name: "만다라케 딥 (Deep) (2F)", pos: [35.7089, 139.6657] },
+                { name: "만다라케 갤럭시 (게임)", pos: [35.7089, 139.6657] },
+                { name: "만다라케 헨야 (4F)", pos: [35.7089, 139.6657] },
+                { name: "데일리 치코 (소프트크림)", pos: [35.7089, 139.6657] },
+                { name: "트리오 (아이돌 굿즈)", pos: [35.7089, 139.6657] },
+                { name: "하비 베이스 (피규어)", pos: [35.7089, 139.6657] }
+            ],
+            akiba_deep_shopping: [
+                { name: "라디오회관 4F (아미아미)", pos: [35.6980, 139.7720] },
+                { name: "라디오회관 3F (K-Books)", pos: [35.6980, 139.7720] },
+                { name: "라디오회관 2F (쇼케이스)", pos: [35.6980, 139.7720] },
+                { name: "트레이더 본점 (미연시/게임)", pos: [35.7010, 139.7718] },
+                { name: "멜론북스 (동인지)", pos: [35.6990, 139.7715] },
+                { name: "스루가야 아키하바라역점", pos: [35.6985, 139.7725] },
+                { name: "라신반 아키하바라", pos: [35.6995, 139.7713] },
+                { name: "코토부키야", pos: [35.6998, 139.7711] }
             ]
         };
 
@@ -352,7 +487,7 @@
                     { time: "10:20 - 10:46", title: "신오사카 역으로 이동", type: "move", transport: "train", from: LOC.nambaStn, to: LOC.shinOsaka, desc: "지하철 이동" },
                     { time: "10:46 - 11:06", title: "에키벤 구매", loc: LOC.shinOsaka, desc: "각자 취향대로 구매" },
                     { time: "11:06 - 13:33", title: "도쿄행 신칸센 이동", type: "move", transport: "train", from: LOC.shinOsaka, to: LOC.tokyoStn, desc: "기차 내 에키벤 식사" },
-                    { time: "13:33 - 14:00", title: "도쿄역 → 숙소 이동", type: "move", transport: "train", from: LOC.tokyoStn, to: LOC.uenoHotel, desc: "우에노 이동" },
+                    { time: "13:33 - 14:00", title: "도쿄역 → 숙소 이동", type: "move", transport: "train", from: LOC.tokyoStn, to: LOC.uenoHotel, desc: "우에노(네기시) 이동" },
                     { time: "14:00 - 14:20", title: "도구거리 이동", type: "move", transport: "walk", from: LOC.uenoHotel, to: LOC.kappabashi, desc: "도보" },
                     { time: "14:20 - 15:20", title: "갓파바시 도구거리", loc: LOC.kappabashi, pois: POIS.kappabashi, desc: "니이미, 마지마야, 유니온 등 관람" },
                     { time: "15:20 - 15:40", title: "센소지로 이동", type: "move", transport: "walk", from: LOC.kappabashi, to: LOC.sensoji, desc: "도보" },
@@ -382,6 +517,83 @@
                     { time: "20:30 - 21:00", title: "아메요코로 이동", type: "move", transport: "walk", from: LOC.gigo, to: LOC.ameyoko, desc: "도보" },
                     { time: "21:00 - 24:00", title: "이자카야 뒷풀이", loc: LOC.ameyoko, pois: POIS.ameyoko, desc: "매장 찾아야 함" }
                 ]
+            },
+            {
+                day: 5,
+                items: [
+                    { time: "08:00 - 10:00", title: "기상 및 체크아웃", loc: LOC.uenoHotel, desc: "숙소(네기시)에서 기상 및 짐 정리" },
+                    { time: "10:00 - 20:00", title: "자유시간", loc: LOC.uenoHotel, desc: "도쿄 자유 일정 (일정표 없음)" }
+                ]
+            },
+            {
+                day: 6,
+                items: [
+                    { time: "00:00 - 08:00", title: "취침 및 기상 준비", loc: LOC.uenoHotel, desc: "컨디션 조절 필수" },
+                    { 
+                        time: "08:00 - 08:15", 
+                        title: "팀 분리 및 출발", 
+                        type: "split_dinner", 
+                        routes: [
+                            { name: "어트랙션(5명): 출발", to: LOC.iriyaStn, color: "#ef4444", desc: "이리야역으로 도보 이동" },
+                            { name: "쇼핑(3명): 휴식/자유", to: LOC.uenoHotel, color: "#a855f7", desc: "숙소 잔류 및 자유일정" }
+                        ],
+                        desc: "어트랙션 팟은 이리야역으로, 쇼핑팟은 자유" 
+                    },
+                    { time: "08:15 - 08:50", title: "이동: 이리야역 → 가미야초역", type: "move", transport: "train", from: LOC.iriyaStn, to: LOC.kamiyachoStn, desc: "히비야선 탑승, 환승 없음 (약 26분)" },
+                    { time: "08:50 - 09:40", title: "오전: 조조지 & 도쿄 타워 뷰", loc: LOC.zojoji, pois: POIS.zojoji_view, desc: "도쿄타워 배경 인생샷 촬영 (시간 조정됨)" },
+                    { time: "09:40 - 10:00", title: "이동: 조조지 → 팀랩(아자부다이)", type: "move", transport: "walk", from: LOC.zojoji, to: LOC.azabudai, desc: "도보 이동 (약 15분), 예약 시간 준수!" },
+                    { time: "10:00 - 12:30", title: "메인 1: 팀랩 보더리스", price: 3800, loc: LOC.azabudai, desc: "아자부다이 힐스, [10:00 예약 필수]" },
+                    { time: "12:30 - 14:00", title: "점심: 아자부다이 힐스", price: 2500, loc: LOC.azabudai, pois: POIS.azabudai_shops, desc: "돈카츠 카와무라, 피자바, %아라비카, 하브스 등" },
+                    { time: "14:00 - 14:30", title: "이동: 가미야초역 → 시부야역", type: "move", transport: "train", from: LOC.kamiyachoStn, to: LOC.shibuyaStn, desc: "히비야선(에비스 환승) → JR 야마노테선" },
+                    { time: "14:30 - 16:10", title: "시부야 파르코 & 미야시타", loc: LOC.parco, pois: POIS.shibuya_attract, desc: "닌텐도, 점프샵, 포켓몬, 휴먼메이드 등 쇼핑" },
+                    { time: "16:10 - 16:20", title: "이동: 미야시타 → 시부야 스카이", type: "move", transport: "walk", from: LOC.miyashita, to: LOC.shibuyaSky, desc: "스크램블 스퀘어로 이동 (14층 입구)" },
+                    { time: "16:20 - 17:40", title: "일행 합류: 시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "[쇼핑팟 합류] 전망대 관람 및 일몰 감상" },
+                    { time: "17:40 - 18:00", title: "이동: 시부야역 → 신주쿠역", type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.shinjukuStn, desc: "JR 야마노테선 (7분 소요)" },
+                    { time: "18:00 - 19:10", title: "저녁: 규카츠 모토무라 본점", price: 2600, loc: LOC.motomura, desc: "화로구이 규카츠 (대기 길면 네기시 변경 고려)" },
+                    { time: "19:10 - 19:30", title: "이동: 식당 → 미스터리 서커스", type: "move", transport: "walk", from: LOC.motomura, to: LOC.mysteryCircus, desc: "도보 2~3분, 화장실 이용" },
+                    { time: "19:30 - 21:40", title: "메인 3: 도쿄 미스터리 서커스", price: 3500, loc: LOC.mysteryCircus, desc: "[방탈출 게임] 예약 게임 몰입 (21:30 종료)" },
+                    { time: "21:40 - 23:30", title: "심야: 쇼핑팟 재합류 & 가부키초", loc: LOC.kabukicho, pois: POIS.shinjuku_night, desc: "이자카야, 노래방, 코파볼 등 불태우기" },
+                    { time: "23:30 - 24:00", title: "숙소 복귀 (막차 주의)", type: "move", transport: "train", from: LOC.shinjukuStn, to: LOC.uguisudani, desc: "JR 야마노테선 (약 25분)" }
+                ],
+                items_shopping: [
+                    { time: "00:00 - 09:00", title: "취침 및 늦잠", loc: LOC.uenoHotel, desc: "여유롭게 기상" },
+                    { time: "09:00 - 10:30", title: "준비 및 이동", type: "move", transport: "train", from: LOC.uenoHotel, to: LOC.omotesando, desc: "오모테산도로 이동 (긴자선)" },
+                    { time: "10:30 - 13:00", title: "오모테산도 힐즈 & 명품거리", loc: LOC.omotesando, pois: POIS.omotesando_shop, desc: "자이레(GYRE), 애플, 메종키츠네, 랄프로렌 등" },
+                    { time: "13:00 - 14:00", title: "점심: 오모테산도 카페", price: 2500, loc: LOC.omotesando, desc: "브런치 (Bills, 우라산도 가든 등)" },
+                    { time: "14:00 - 15:30", title: "이동: 캣스트리트 → 하라주쿠", type: "move", transport: "walk", from: LOC.omotesando, to: LOC.harajuku, desc: "편집샵 구경하며 하라주쿠로 도보 이동" },
+                    { time: "15:30 - 16:00", title: "이동: 하라주쿠 → 시부야", type: "move", transport: "walk", from: LOC.harajuku, to: LOC.shibuyaSky, desc: "캣스트리트 따라 시부야 도착" },
+                    { time: "16:00 - 16:20", title: "시부야 스크램블 교차로", loc: LOC.shibuyaStn, desc: "합류 전 스타벅스 츠타야 등 구경" },
+                    { time: "16:20 - 17:40", title: "일행 합류: 시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "[어트랙션 팟 접선] 단체 사진 및 일몰" },
+                    { time: "17:40 - 18:10", title: "이동: 시부야역 → 신주쿠역", type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.shinjukuStn, desc: "신주쿠로 이동하여 쇼핑 계속" },
+                    { time: "18:10 - 19:30", title: "저녁: 신주쿠 루미네/뉴우먼", price: 3000, loc: LOC.shinjukuStn, desc: "쇼핑몰 내 맛집 식사 (일행과 분리 식사)" },
+                    { time: "19:30 - 21:40", title: "심야 쇼핑: 이세탄/돈키호테", loc: LOC.kabukicho, desc: "이세탄 맨즈, 가부키초 인근 돈키호테 쇼핑" },
+                    { time: "21:40 - 23:30", title: "어트랙션 팀 재합류", loc: LOC.kabukicho, desc: "가부키초에서 다같이 뒷풀이" },
+                    { time: "23:30 - 24:00", title: "숙소 복귀", type: "move", transport: "train", from: LOC.shinjukuStn, to: LOC.uguisudani, desc: "JR 야마노테선 막차" }
+                ]
+            },
+            // [NEW] Day 7: Otaku vs City
+            {
+                day: 7,
+                items: [
+                    { time: "00:00 - 10:30", title: "취침 및 기상 준비", loc: LOC.uenoHotel, desc: "느긋하게 일어나서 아침 겸 점심 식사" },
+                    { time: "10:30 - 11:15", title: "이동: 우구이수다니 → 나카노역", type: "move", transport: "train", from: LOC.uguisudani, to: LOC.nakanoStn, desc: "신주쿠 환승 주오선(쾌속), 약 45분" },
+                    { time: "11:15 - 12:00", title: "이른 점심: 나카노 브로드웨이", loc: LOC.nakanoBroadway, desc: "'데일리 치코'(8단 아이스크림) or 지하 식당가" },
+                    { time: "12:00 - 14:30", title: "탐굴: 나카노 브로드웨이", loc: LOC.nakanoBroadway, pois: POIS.nakano_detailed, desc: "만다라케 Galaxy, Deep 집중 공략" },
+                    { time: "14:30 - 15:00", title: "이동: 나카노역 → 아키하바라역", type: "move", transport: "train", from: LOC.nakanoStn, to: LOC.radioKaikan, desc: "주오-소부선(노란색) 환승 없음, 약 30분" },
+                    { time: "15:00 - 15:15", title: "코인 로커 짐 보관", loc: LOC.akibaLocker, desc: "전리품 보관 (아키하바라역/라디오회관)" },
+                    { time: "15:15 - 17:00", title: "쇼핑 1차전: 라디오회관", loc: LOC.radioKaikan, pois: POIS.akiba_deep_shopping, desc: "아미아미, K-Books, 렌탈 쇼케이스 공략" },
+                    { time: "17:00 - 18:30", title: "쇼핑 2차전: 심연의 본진", loc: LOC.traderHQ, desc: "트레이더 본점(PC/미소녀), 멜론북스" },
+                    { time: "18:30 - 19:30", title: "저녁: 아키바 스타일", loc: LOC.gogoCurry, desc: "고고 카레 or 규동 산보 등 든든하게 해결" },
+                    { time: "19:30 - 20:30", title: "쇼핑 3차전: 스루가야 & 라신반", loc: LOC.surugayaDeep, desc: "식사 후 소화시킬 겸 덤핑 굿즈 디깅" },
+                    { time: "20:30 - 21:00", title: "이동: 아키하바라 → 숙소", type: "move", transport: "train", from: LOC.radioKaikan, to: LOC.uguisudani, desc: "짐 찾아서 복귀 (약 30분)" },
+                    { time: "21:00 - 24:00", title: "숙소 도착 및 언박싱", loc: LOC.uenoHotel, desc: "편의점 간식과 함께 전리품 감상회" }
+                ],
+                // 도쿄 시내 팟 (5명)
+                items_shopping: [
+                    { time: "09:00 - 10:00", title: "기상 및 준비", loc: LOC.uenoHotel, desc: "시내 투어 준비" },
+                    { time: "10:00 - 22:00", title: "도쿄 시내 자유 여행", loc: LOC.tokyoStn, desc: "도쿄역, 긴자, 롯폰기 등 자유 일정 (상세 없음)" },
+                    { time: "22:00 - 24:00", title: "숙소 복귀 및 휴식", loc: LOC.uenoHotel, desc: "오타쿠 팟과 합류" }
+                ]
             }
         ];
 
@@ -396,11 +608,11 @@
 
         const SCHEDULE = RAW_DATA;
         
-        // Multi-select Logic
         let selectedIndices = new Set();
         let longPressTimer;
         let isLongPressTriggered = false;
         let currentDay = 0;
+        let currentTeam = 'attraction'; // 'attraction' | 'shopping'
 
         // --- 3. MAP ---
         const map = L.map('map', { zoomControl: false }).setView([34.6618, 135.5021], 13);
@@ -416,7 +628,8 @@
             poi: L.divIcon({ className: 'pulse-icon' }),
             poiBlue: L.divIcon({ className: 'pulse-icon-blue' }),
             splitA: L.divIcon({ html: '<div class="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white">A</div>', className: 'bg-transparent', iconSize: [24,24] }),
-            splitB: L.divIcon({ html: '<div class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white">B</div>', className: 'bg-transparent', iconSize: [24,24] })
+            splitB: L.divIcon({ html: '<div class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white">B</div>', className: 'bg-transparent', iconSize: [24,24] }),
+            splitShop: L.divIcon({ html: '<div class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white"><i class="fas fa-shopping-bag"></i></div>', className: 'bg-transparent', iconSize: [24,24] })
         };
 
         function getNumberIcon(num) {
@@ -431,17 +644,12 @@
         async function drawRoute(from, to, color = '#3b82f6', dashed = false) {
             const options = { color: color, weight: 5, opacity: 0.8, lineJoin: 'round' };
             if(dashed) options.dashArray = '1, 10';
-
-            // Show straight line first or dashed line
             const line = L.polyline([from, to], dashed ? { ...options, dashArray: '8, 8', weight: 4, color: '#cbd5e1' } : options).addTo(map);
-            if(dashed) { layers.push(line); return; } // just return dashed
-
+            if(dashed) { layers.push(line); return; }
             layers.push(line);
-            
             try {
                 const dist = getDistance(from[0], from[1], to[0], to[1]);
                 if (dist > 100) { map.fitBounds(line.getBounds(), { padding: [50, 50] }); return; }
-
                 const resp = await fetch(`https://router.project-osrm.org/route/v1/foot/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson`);
                 const data = await resp.json();
                 if(data.code === 'Ok') {
@@ -462,26 +670,27 @@
             document.getElementById('map-info').classList.add('hidden');
             layers.forEach(l => map.removeLayer(l)); layers = [];
             
-            // Revert to start location view
-            const first = SCHEDULE[currentDay].items.find(i => i.loc);
-            if(first) map.setView(first.loc, 13);
+            // Revert map view
+            let dayData = SCHEDULE[currentDay];
+            let items = ( (currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
+            const first = items.find(i => i.loc || i.from);
+            if(first) map.setView(first.loc || first.from, 13);
         }
 
         function updateMultiSelectMap() {
             layers.forEach(l => map.removeLayer(l)); layers = [];
             document.getElementById('map-info').classList.add('hidden');
 
-            const dayItems = SCHEDULE[currentDay].items;
+            let dayData = SCHEDULE[currentDay];
+            let items = ( (currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
             const indices = Array.from(selectedIndices).sort((a,b) => a-b);
             
             if (indices.length === 0) return;
 
             const routePoints = [];
-            
             indices.forEach((idx, i) => {
-                const item = dayItems[idx];
+                const item = items[idx];
                 const pos = item.loc || item.to || item.from;
-                
                 if (pos) {
                     routePoints.push(pos);
                     layers.push(L.marker(pos, { icon: getNumberIcon(i + 1) }).addTo(map));
@@ -489,7 +698,6 @@
             });
 
             if (routePoints.length > 1) {
-                // Connect dots with dashed lines for visual sequence
                 const pathLine = L.polyline(routePoints, { color: '#3b82f6', weight: 4, dashArray: '10, 10', opacity: 0.8 }).addTo(map);
                 layers.push(pathLine);
                 map.fitBounds(pathLine.getBounds(), { padding: [50, 50] });
@@ -499,10 +707,10 @@
         }
 
         function handleItemClick(index, card) {
-            const dayData = SCHEDULE[currentDay];
-            const item = dayData.items[index];
+            let dayData = SCHEDULE[currentDay];
+            let items = ( (currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
+            const item = items[index];
 
-            // 1. If Multi-select Mode is Active or User just triggered Long Press
             if (selectedIndices.size > 0 || isLongPressTriggered) {
                 if (selectedIndices.has(index)) {
                     selectedIndices.delete(index);
@@ -511,7 +719,6 @@
                     selectedIndices.add(index);
                     card.classList.add('multi-selected');
                 }
-
                 if (selectedIndices.size === 0) {
                     clearSelection();
                 } else {
@@ -521,11 +728,9 @@
                 return;
             }
 
-            // 2. Normal Single Click Mode
             document.querySelectorAll('.schedule-item').forEach(e => e.classList.remove('active-card', 'multi-selected'));
             card.classList.add('active-card');
             
-            // Render Single Item Details (Existing Logic)
             layers.forEach(l => map.removeLayer(l)); layers = [];
             
             const infoBox = document.getElementById('map-info');
@@ -545,10 +750,15 @@
             const isSplit = item.type === 'split_dinner';
 
             if (isSplit) {
-                const start = LOC.akihabara;
+                const start = item.day === 6 ? LOC.uenoHotel : LOC.akihabara;
                 item.routes.forEach(r => {
-                    drawRoute(start, r.to, r.color);
-                    layers.push(L.marker(r.to, {icon: r.name.includes('A')?icons.splitA:icons.splitB}).addTo(map).bindPopup(r.name));
+                    if(!r.name.includes('쇼핑')) { 
+                        drawRoute(start, r.to, r.color);
+                    }
+                    let iconType = icons.splitA;
+                    if(r.name.includes('B') || r.name.includes('호타테')) iconType = icons.splitB;
+                    if(r.name.includes('쇼핑')) iconType = icons.splitShop;
+                    layers.push(L.marker(r.to, {icon: iconType}).addTo(map).bindPopup(r.name));
                 });
                 layers.push(L.marker(start, {icon: icons.start}).addTo(map));
             } else if (item.type === 'merge') {
@@ -572,7 +782,6 @@
                         layers.push(L.marker(p.pos, {icon: icons.poi}).addTo(map).bindTooltip(p.name, {permanent:true, direction:'top', className:'text-xs font-bold bg-white border px-1 rounded shadow'}));
                     });
                     map.fitBounds(bounds, {padding:[50,50]});
-                    
                     infoHtml += `<div class="grid grid-cols-2 gap-1 mt-2">`;
                     item.pois.forEach(p => infoHtml += `<span class="text-xs bg-gray-50 px-2 py-1 rounded border">📍 ${p.name}</span>`);
                     infoHtml += `</div>`;
@@ -580,7 +789,6 @@
             }
             document.getElementById('info-content').innerHTML = infoHtml;
         }
-
 
         // --- 5. RENDER ---
         function formatMoney(n) { return n ? `¥${n.toLocaleString()}` : ''; }
@@ -601,23 +809,88 @@
             document.getElementById('map-info').classList.add('hidden', 'opacity-0', 'translate-y-[-20px]');
         }
 
+        // [UPDATED] 팀 선택 함수 (Day 7 로직 추가)
+        function selectTeam(team) {
+            currentTeam = team;
+            
+            // 스타일 업데이트
+            const btnAtt = document.getElementById('btn-team-attraction');
+            const btnShop = document.getElementById('btn-team-shopping');
+            
+            if(team === 'attraction') {
+                btnAtt.className = 'team-toggle team-active px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm';
+                btnShop.className = 'team-toggle team-inactive px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm';
+            } else {
+                btnAtt.className = 'team-toggle team-inactive px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm';
+                btnShop.className = 'team-toggle team-active px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm';
+            }
+            
+            // 타임라인 다시 그리기
+            renderTimeline(currentDay); 
+            
+            // 맵 뷰 초기화
+            const dayData = SCHEDULE[currentDay];
+            const items = (team === 'shopping') ? dayData.items_shopping : dayData.items;
+            const first = items.find(i => i.loc || i.from);
+            if(first) map.setView(first.loc || first.from, 13);
+        }
+
         function renderTimeline(dayIdx) {
             currentDay = dayIdx;
-            clearSelection(); // Reset selection on day change
+            clearSelection(); 
 
             const list = document.getElementById('schedule-list');
             const dayData = SCHEDULE[dayIdx];
+            const legend = document.getElementById('split-legend');
+            const teamSelector = document.getElementById('team-selector');
+            const btnAtt = document.getElementById('btn-team-attraction');
+            const btnShop = document.getElementById('btn-team-shopping');
+            
             list.innerHTML = '';
             
-            document.getElementById('split-legend').classList.toggle('hidden', dayIdx !== 3);
-            let total = 0; dayData.items.forEach(i => total += (i.price||0));
+            // 1. 팀 선택기 표시 여부 및 텍스트 변경
+            if (dayIdx === 5) { // 6일차
+                teamSelector.classList.remove('hidden');
+                btnAtt.innerHTML = "🎢 어트랙션 팟 (5명)";
+                btnShop.innerHTML = "🛍️ 쇼핑 팟 (3명)";
+            } else if (dayIdx === 6) { // 7일차
+                teamSelector.classList.remove('hidden');
+                btnAtt.innerHTML = "🤓 오타쿠 팟 (3명)";
+                btnShop.innerHTML = "🏙️ 도쿄 시내 팟 (5명)";
+            } else {
+                teamSelector.classList.add('hidden');
+            }
+
+            // 2. 범례 표시 로직
+            if (dayIdx === 3) { // 4일차 (라멘)
+                legend.classList.remove('hidden');
+                legend.innerHTML = `
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>A팀: 멘도코로 혼다</span></div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full"></span> <span>B팀: 호타테 비요리</span></div>
+                `;
+            } else if (dayIdx === 5 && currentTeam === 'attraction') { // 6일차 어트랙션 팟일 때만 표시
+                legend.classList.remove('hidden');
+                legend.innerHTML = `
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>🎢 어트랙션 (5명)</span></div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-500 rounded-full"></span> <span>🛍️ 쇼핑 (3명)</span></div>
+                `;
+            } else {
+                legend.classList.add('hidden');
+            }
+            
+            // 3. 아이템 데이터 선택 (6일차/7일차 분기)
+            let items = dayData.items;
+            if ((dayIdx === 5 || dayIdx === 6) && currentTeam === 'shopping') {
+                items = dayData.items_shopping;
+            }
+
+            let total = 0; items.forEach(i => total += (i.price||0));
             document.getElementById('total-cost-desktop').innerText = `총 예상 비용: ${formatMoney(total)}`;
             document.getElementById('total-cost-mobile').innerText = `Total: ${formatMoney(total)}`;
 
-            // Hide hint after 3 seconds
             setTimeout(() => { document.getElementById('multi-select-hint').classList.add('opacity-0'); }, 3000);
 
-            dayData.items.forEach((item, index) => {
+            items.forEach((item, index) => {
                 const isMove = item.type === 'move';
                 const isSplit = item.type === 'split_dinner';
                 
@@ -641,41 +914,37 @@
                 if(item.desc) content += `<p class="text-xs text-gray-500 mt-1 truncate">${item.desc}</p>`;
                 if(isMove && item.dist) content += `<p class="text-[10px] text-blue-500 font-semibold mt-0.5"><i class="fas fa-route"></i> ${item.dist}km 이동</p>`;
                 
-                if(isSplit) content += `<div class="flex gap-2 mt-2"><span class="text-[10px] px-2 py-1 rounded border split-badge-a flex-1 text-center">A: 혼다</span><span class="text-[10px] px-2 py-1 rounded border split-badge-b flex-1 text-center">B: 호타테</span></div>`;
+                if(isSplit) {
+                    if (currentDay === 5) { 
+                         content += `<div class="flex gap-2 mt-2"><span class="text-[10px] px-2 py-1 rounded border split-badge-a flex-1 text-center">🎢 어트랙션 (5명)</span><span class="text-[10px] px-2 py-1 rounded border split-badge-shop flex-1 text-center">🛍️ 쇼핑 (3명)</span></div>`;
+                    } else { 
+                        content += `<div class="flex gap-2 mt-2"><span class="text-[10px] px-2 py-1 rounded border split-badge-a flex-1 text-center">A: 혼다</span><span class="text-[10px] px-2 py-1 rounded border split-badge-b flex-1 text-center">B: 호타테</span></div>`;
+                    }
+                }
                 content += `</div></div>`;
                 card.innerHTML = content;
 
-                // --- Long Press Logic ---
                 const startEvent = (e) => {
                     isLongPressTriggered = false;
                     longPressTimer = setTimeout(() => {
                         isLongPressTriggered = true;
-                        // Haptic feedback if available
                         if (navigator.vibrate) navigator.vibrate(50);
                         handleItemClick(index, card); 
                     }, 500); 
                 };
+                const clearEvent = () => { clearTimeout(longPressTimer); };
 
-                const clearEvent = () => {
-                    clearTimeout(longPressTimer);
-                };
-
-                // Mouse Events
                 card.addEventListener('mousedown', startEvent);
                 card.addEventListener('mouseup', clearEvent);
                 card.addEventListener('mouseleave', clearEvent);
-
-                // Touch Events
                 card.addEventListener('touchstart', startEvent, {passive: true});
                 card.addEventListener('touchend', clearEvent);
-                card.addEventListener('touchmove', clearEvent); // Cancel on scroll
-
-                // Click Event (triggers after mouseup/touchend)
+                card.addEventListener('touchmove', clearEvent); 
                 card.onclick = (e) => {
                     if (!isLongPressTriggered) {
                         handleItemClick(index, card);
                     }
-                    isLongPressTriggered = false; // Reset
+                    isLongPressTriggered = false; 
                 };
 
                 list.appendChild(card);
@@ -683,18 +952,82 @@
         }
 
         function selectDay(idx) {
-            [0,1,2,3].forEach(i => {
+	currentDay = idx;
+            [0,1,2,3,4,5,6].forEach(i => {
                 const btn = document.getElementById(`tab-${i}`);
                 if(i===idx) { btn.classList.add('text-indigo-600','border-indigo-600'); btn.classList.remove('text-gray-500'); }
                 else { btn.classList.remove('text-indigo-600','border-indigo-600'); btn.classList.add('text-gray-500'); }
             });
-            renderTimeline(idx);
             
-            const first = SCHEDULE[idx].items.find(i => i.loc);
-            if(first) map.setView(first.loc, 13);
+            // 날짜 변경 시 기본 팀은 어트랙션(첫번째)으로 초기화
+            if(idx === 5 || idx === 6) selectTeam('attraction');
+            else renderTimeline(idx);
+            
+            const dayData = SCHEDULE[idx];
+            // 6,7일차일때 기본 items(첫번째 탭)으로 위치 잡기
+            const first = dayData.items.find(i => i.loc || i.from);
+            if(first) map.setView(first.loc || first.from, 13);
         }
 
+        // --- [NEW] Resizing Logic ---
+        function initResizer() {
+            const resizer = document.getElementById('resizer');
+            const sidebar = document.getElementById('sidebar-panel');
+            const mapContainer = document.getElementById('map-container');
+            
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', (e) => { isResizing = true; e.preventDefault(); });
+            resizer.addEventListener('touchstart', (e) => { isResizing = true; e.preventDefault(); });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                
+                // Desktop (Horizontal Resize)
+                if (window.innerWidth >= 768) {
+                    const percentage = (e.clientX / window.innerWidth) * 100;
+                    if (percentage > 20 && percentage < 80) { // Limit min/max
+                        sidebar.style.width = `${percentage}%`;
+                        // Map takes remaining space via flex
+                    }
+                } 
+                // Mobile (Vertical Resize)
+                else {
+                    // Adjust for header height (approx 50px) if needed, 
+                    // but raw Y coordinate usually works fine for % calculation
+                    const percentage = (e.clientY / window.innerHeight) * 100;
+                    if (percentage > 20 && percentage < 80) {
+                        sidebar.style.height = `${percentage}%`;
+                        // Map takes remaining space via flex
+                    }
+                }
+                
+                map.invalidateSize(); // Prevent map gray area
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isResizing) return;
+                const touch = e.touches[0];
+                
+                // Similar logic for Touch
+                if (window.innerWidth >= 768) {
+                    const percentage = (touch.clientX / window.innerWidth) * 100;
+                    if (percentage > 20 && percentage < 80) {
+                        sidebar.style.width = `${percentage}%`;
+                    }
+                } else {
+                    const percentage = (touch.clientY / window.innerHeight) * 100;
+                    if (percentage > 20 && percentage < 80) {
+                        sidebar.style.height = `${percentage}%`;
+                    }
+                }
+                map.invalidateSize();
+            });
+
+            window.addEventListener('mouseup', () => { isResizing = false; map.invalidateSize(); });
+            window.addEventListener('touchend', () => { isResizing = false; map.invalidateSize(); });
+        }
+
+        initResizer();
         selectDay(0);
-    </script>
-</body>
-</html>
+    </script></body></html>
