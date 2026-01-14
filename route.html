@@ -443,12 +443,12 @@
                     { time: "00:00 - 05:00", title: "취침", loc: LOC.osakaHotel, desc: "휴식" },
                     { time: "05:00 - 06:00", title: "기상 및 세면", loc: LOC.osakaHotel, desc: "준비" },
                     { time: "06:00 - 06:15", title: "난바역으로 이동", type: "move", transport: "walk", from: LOC.osakaHotel, to: LOC.nambaStn, desc: "도보 이동" },
-                    { time: "06:15 - 07:15", title: "USJ 게이트로 이동", type: "move", transport: "train", from: LOC.nambaStn, to: LOC.usj, desc: "전철 이동" },
+                    { time: "06:15 - 07:15", title: "USJ 게이트로 이동", price: 370, type: "move", transport: "train", from: LOC.nambaStn, to: LOC.usj, desc: "전철 이동 (한신/JR)" },
                     { time: "07:15 - 08:15", title: "오픈 대기", loc: LOC.usj, desc: "입장 대기" },
                     { time: "08:15 - 10:30", title: "USJ 1부 (닌텐도/해리포터)", loc: LOC.usj, pois: POIS.usj, desc: "슈퍼 닌텐도 월드, 위저딩 월드 등" },
                     { time: "10:30 - 11:30", title: "점심식사", price: 2000, loc: LOC.usj, desc: "파크 내 식사" },
                     { time: "11:30 - 19:30", title: "USJ 2부 (어트랙션)", loc: LOC.usj, desc: "미니언, 쥬라기, 헐리우드, 워터월드 등" },
-                    { time: "19:30 - 20:30", title: "난바로 이동", type: "move", transport: "train", from: LOC.usj, to: LOC.nambaStn, desc: "전철 이동" },
+                    { time: "19:30 - 20:30", title: "난바로 이동", price: 370, type: "move", transport: "train", from: LOC.usj, to: LOC.nambaStn, desc: "전철 이동" },
                     { time: "20:30 - 20:45", title: "후쿠타로 본점 이동", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.fukutaro, desc: "도보 이동" },
                     { time: "20:45 - 22:00", title: "저녁: 후쿠타로 본점", price: 2500, loc: LOC.fukutaro, desc: "오코노미야키 (웨이팅 가능성 있음)" },
                     { time: "22:00 - 22:15", title: "숙소로 이동", type: "move", transport: "walk", from: LOC.fukutaro, to: LOC.osakaHotel, desc: "도보 복귀" },
@@ -461,11 +461,11 @@
                     { time: "00:00 - 06:00", title: "취침", loc: LOC.osakaHotel, desc: "휴식" },
                     { time: "06:00 - 07:00", title: "기상 및 아침식사", price: 780, loc: LOC.nambaStn, desc: "신파치 식당, 하코유메 등 추천" },
                     { time: "07:00 - 07:15", title: "난바역으로 이동", type: "move", transport: "walk", from: LOC.osakaHotel, to: LOC.nambaStn, desc: "이동" },
-                    { time: "07:15 - 08:45", title: "후시미 이나리 신사로 이동", type: "move", transport: "train", from: LOC.nambaStn, to: LOC.fushimiInari, desc: "교토행 전철" },
+                    { time: "07:15 - 08:45", title: "후시미 이나리 신사로 이동", price: 800, type: "move", transport: "train", from: LOC.nambaStn, to: LOC.fushimiInari, desc: "교토행 전철 (게이한 등)" },
                     { time: "08:45 - 10:15", title: "후시미 이나리 신사", loc: LOC.fushimiInari, pois: POIS.fushimi, desc: "오쿠샤 봉배소, 쿠마타카샤, 요츠츠지" },
-                    { time: "10:15 - 11:30", title: "야마모토 멘조우로 이동", type: "move", transport: "train", from: LOC.fushimiInari, to: LOC.yamamoto, desc: "전철/버스 환승 이동 (다소 거리 있음)" },
+                    { time: "10:15 - 11:30", title: "야마모토 멘조우로 이동", price: 230, type: "move", transport: "train", from: LOC.fushimiInari, to: LOC.yamamoto, desc: "전철/버스 환승 이동" },
                     { time: "11:30 - 12:30", title: "점심: 야마모토 멘조우", price: 1200, loc: LOC.yamamoto, desc: "우동 맛집 (예약 필수)" },
-                    { time: "12:30 - 13:00", title: "기요미즈테라로 이동", type: "move", transport: "train", from: LOC.yamamoto, to: LOC.kiyomizu, desc: "버스/도보 이동" },
+                    { time: "12:30 - 13:00", title: "기요미즈테라로 이동", price: 230, type: "move", transport: "train", from: LOC.yamamoto, to: LOC.kiyomizu, desc: "버스/도보 이동" },
                     { time: "13:00 - 14:30", title: "기요미즈테라 (청수사)", loc: LOC.kiyomizu, pois: POIS.kiyomizu, desc: "본당 무대, 오토와 폭포" },
                     { time: "14:30 - 15:30", title: "산넨자카 & 니넨자카", loc: LOC.sannenzaka, pois: POIS.sannenzaka, desc: "거리 투어" },
                     { time: "15:30 - 16:00", title: "산조 오하시로 이동", type: "move", transport: "walk", from: LOC.sannenzaka, to: LOC.kamoRiver, desc: "도보 이동" },
@@ -473,7 +473,7 @@
                     { time: "16:50 - 18:00", title: "저녁1: 쿄 모츠나베 히데토라", price: 3500, loc: LOC.hideatora, desc: "모츠나베 식사" },
                     { time: "18:00 - 19:30", title: "기온 & 폰토초 거리", loc: LOC.gion, pois: [...POIS.gion, ...POIS.pontocho], desc: "밤거리 구경" },
                     { time: "19:30 - 20:30", title: "저녁2: 폰토쵸 야소하치", price: 3000, loc: LOC.yasohachi, desc: "이자카야" },
-                    { time: "20:30 - 22:00", title: "난바로 이동", type: "move", transport: "train", from: LOC.yasohachi, to: LOC.nambaStn, desc: "오사카 복귀" },
+                    { time: "20:30 - 22:00", title: "난바로 이동", price: 650, type: "move", transport: "train", from: LOC.yasohachi, to: LOC.nambaStn, desc: "오사카 복귀 (게이한+지하철)" },
                     { time: "22:00 - 22:15", title: "라운드원으로 이동", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.roundOne, desc: "도보 이동" },
                     { time: "22:15 - 24:00", title: "라운드원 or 휴식", loc: LOC.roundOne, desc: "게임 및 액티비티" }
                 ]
@@ -484,15 +484,15 @@
                     { time: "00:00 - 01:00", title: "라운드원 종료 후 숙소 복귀", type: "move", transport: "walk", from: LOC.roundOne, to: LOC.osakaHotel, desc: "심야 도보 이동" },
                     { time: "01:00 - 09:00", title: "취침", loc: LOC.osakaHotel, desc: "마지막 밤" },
                     { time: "09:00 - 10:20", title: "기상 및 아침(코메다)", loc: LOC.nambaStn, desc: "코메다 커피 등" },
-                    { time: "10:20 - 10:46", title: "신오사카 역으로 이동", type: "move", transport: "train", from: LOC.nambaStn, to: LOC.shinOsaka, desc: "지하철 이동" },
+                    { time: "10:20 - 10:46", title: "신오사카 역으로 이동", price: 290, type: "move", transport: "train", from: LOC.nambaStn, to: LOC.shinOsaka, desc: "지하철 이동 (미도스지선)" },
                     { time: "10:46 - 11:06", title: "에키벤 구매", loc: LOC.shinOsaka, desc: "각자 취향대로 구매" },
-                    { time: "11:06 - 13:33", title: "도쿄행 신칸센 이동", type: "move", transport: "train", from: LOC.shinOsaka, to: LOC.tokyoStn, desc: "기차 내 에키벤 식사" },
-                    { time: "13:33 - 14:00", title: "도쿄역 → 숙소 이동", type: "move", transport: "train", from: LOC.tokyoStn, to: LOC.uenoHotel, desc: "우에노(네기시) 이동" },
+                    { time: "11:06 - 13:33", title: "도쿄행 신칸센 이동", price: 14720, type: "move", transport: "train", from: LOC.shinOsaka, to: LOC.tokyoStn, desc: "기차 내 에키벤 식사" },
+                    { time: "13:33 - 14:00", title: "도쿄역 → 숙소 이동", price: 170, type: "move", transport: "train", from: LOC.tokyoStn, to: LOC.uenoHotel, desc: "우에노(네기시) 이동" },
                     { time: "14:00 - 14:20", title: "도구거리 이동", type: "move", transport: "walk", from: LOC.uenoHotel, to: LOC.kappabashi, desc: "도보" },
                     { time: "14:20 - 15:20", title: "갓파바시 도구거리", loc: LOC.kappabashi, pois: POIS.kappabashi, desc: "니이미, 마지마야, 유니온 등 관람" },
                     { time: "15:20 - 15:40", title: "센소지로 이동", type: "move", transport: "walk", from: LOC.kappabashi, to: LOC.sensoji, desc: "도보" },
                     { time: "15:40 - 17:00", title: "센소지 & 나카미세도리", loc: LOC.sensoji, pois: POIS.sensoji, desc: "카미나리몬, 밀레 메레(애플파이), 멘치카츠 등" },
-                    { time: "17:00 - 17:30", title: "아키하바라로 이동", type: "move", transport: "train", from: LOC.sensoji, to: LOC.akihabara, desc: "전철/도보" },
+                    { time: "17:00 - 17:30", title: "아키하바라로 이동", price: 210, type: "move", transport: "train", from: LOC.sensoji, to: LOC.akihabara, desc: "츠쿠바 익스프레스 등" },
                     { time: "17:30 - 18:30", title: "아키하바라 구경", loc: LOC.akihabara, pois: POIS.akihabara, desc: "라디오회관, 애니메이트 등" },
                     { 
                         time: "18:30 - 19:30", 
@@ -539,36 +539,36 @@
                         ],
                         desc: "어트랙션 팟은 이리야역으로, 쇼핑팟은 자유" 
                     },
-                    { time: "08:15 - 08:50", title: "이동: 이리야역 → 가미야초역", type: "move", transport: "train", from: LOC.iriyaStn, to: LOC.kamiyachoStn, desc: "히비야선 탑승, 환승 없음 (약 26분)" },
+                    { time: "08:15 - 08:50", title: "이동: 이리야역 → 가미야초역", price: 210, type: "move", transport: "train", from: LOC.iriyaStn, to: LOC.kamiyachoStn, desc: "히비야선 탑승, 환승 없음 (약 26분)" },
                     { time: "08:50 - 09:40", title: "오전: 조조지 & 도쿄 타워 뷰", loc: LOC.zojoji, pois: POIS.zojoji_view, desc: "도쿄타워 배경 인생샷 촬영 (시간 조정됨)" },
                     { time: "09:40 - 10:00", title: "이동: 조조지 → 팀랩(아자부다이)", type: "move", transport: "walk", from: LOC.zojoji, to: LOC.azabudai, desc: "도보 이동 (약 15분), 예약 시간 준수!" },
                     { time: "10:00 - 12:30", title: "메인 1: 팀랩 보더리스", price: 3800, loc: LOC.azabudai, desc: "아자부다이 힐스, [10:00 예약 필수]" },
                     { time: "12:30 - 14:00", title: "점심: 아자부다이 힐스", price: 2500, loc: LOC.azabudai, pois: POIS.azabudai_shops, desc: "돈카츠 카와무라, 피자바, %아라비카, 하브스 등" },
-                    { time: "14:00 - 14:30", title: "이동: 가미야초역 → 시부야역", type: "move", transport: "train", from: LOC.kamiyachoStn, to: LOC.shibuyaStn, desc: "히비야선(에비스 환승) → JR 야마노테선" },
+                    { time: "14:00 - 14:30", title: "이동: 가미야초역 → 시부야역", price: 210, type: "move", transport: "train", from: LOC.kamiyachoStn, to: LOC.shibuyaStn, desc: "히비야선(에비스 환승) → JR 야마노테선" },
                     { time: "14:30 - 16:10", title: "시부야 파르코 & 미야시타", loc: LOC.parco, pois: POIS.shibuya_attract, desc: "닌텐도, 점프샵, 포켓몬, 휴먼메이드 등 쇼핑" },
                     { time: "16:10 - 16:20", title: "이동: 미야시타 → 시부야 스카이", type: "move", transport: "walk", from: LOC.miyashita, to: LOC.shibuyaSky, desc: "스크램블 스퀘어로 이동 (14층 입구)" },
                     { time: "16:20 - 17:40", title: "일행 합류: 시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "[쇼핑팟 합류] 전망대 관람 및 일몰 감상" },
-                    { time: "17:40 - 18:00", title: "이동: 시부야역 → 신주쿠역", type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.shinjukuStn, desc: "JR 야마노테선 (7분 소요)" },
+                    { time: "17:40 - 18:00", title: "이동: 시부야역 → 신주쿠역", price: 170, type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.shinjukuStn, desc: "JR 야마노테선 (7분 소요)" },
                     { time: "18:00 - 19:10", title: "저녁: 규카츠 모토무라 본점", price: 2600, loc: LOC.motomura, desc: "화로구이 규카츠 (대기 길면 네기시 변경 고려)" },
                     { time: "19:10 - 19:30", title: "이동: 식당 → 미스터리 서커스", type: "move", transport: "walk", from: LOC.motomura, to: LOC.mysteryCircus, desc: "도보 2~3분, 화장실 이용" },
                     { time: "19:30 - 21:40", title: "메인 3: 도쿄 미스터리 서커스", price: 3500, loc: LOC.mysteryCircus, desc: "[방탈출 게임] 예약 게임 몰입 (21:30 종료)" },
                     { time: "21:40 - 23:30", title: "심야: 쇼핑팟 재합류 & 가부키초", loc: LOC.kabukicho, pois: POIS.shinjuku_night, desc: "이자카야, 노래방, 코파볼 등 불태우기" },
-                    { time: "23:30 - 24:00", title: "숙소 복귀 (막차 주의)", type: "move", transport: "train", from: LOC.shinjukuStn, to: LOC.uguisudani, desc: "JR 야마노테선 (약 25분)" }
+                    { time: "23:30 - 24:00", title: "숙소 복귀 (막차 주의)", price: 210, type: "move", transport: "train", from: LOC.shinjukuStn, to: LOC.uguisudani, desc: "JR 야마노테선 (약 25분)" }
                 ],
                 items_shopping: [
                     { time: "00:00 - 09:00", title: "취침 및 늦잠", loc: LOC.uenoHotel, desc: "여유롭게 기상" },
-                    { time: "09:00 - 10:30", title: "준비 및 이동", type: "move", transport: "train", from: LOC.uenoHotel, to: LOC.omotesando, desc: "오모테산도로 이동 (긴자선)" },
+                    { time: "09:00 - 10:30", title: "준비 및 이동", price: 210, type: "move", transport: "train", from: LOC.uenoHotel, to: LOC.omotesando, desc: "오모테산도로 이동 (긴자선)" },
                     { time: "10:30 - 13:00", title: "오모테산도 힐즈 & 명품거리", loc: LOC.omotesando, pois: POIS.omotesando_shop, desc: "자이레(GYRE), 애플, 메종키츠네, 랄프로렌 등" },
                     { time: "13:00 - 14:00", title: "점심: 오모테산도 카페", price: 2500, loc: LOC.omotesando, desc: "브런치 (Bills, 우라산도 가든 등)" },
                     { time: "14:00 - 15:30", title: "이동: 캣스트리트 → 하라주쿠", type: "move", transport: "walk", from: LOC.omotesando, to: LOC.harajuku, desc: "편집샵 구경하며 하라주쿠로 도보 이동" },
                     { time: "15:30 - 16:00", title: "이동: 하라주쿠 → 시부야", type: "move", transport: "walk", from: LOC.harajuku, to: LOC.shibuyaSky, desc: "캣스트리트 따라 시부야 도착" },
                     { time: "16:00 - 16:20", title: "시부야 스크램블 교차로", loc: LOC.shibuyaStn, desc: "합류 전 스타벅스 츠타야 등 구경" },
                     { time: "16:20 - 17:40", title: "일행 합류: 시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "[어트랙션 팟 접선] 단체 사진 및 일몰" },
-                    { time: "17:40 - 18:10", title: "이동: 시부야역 → 신주쿠역", type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.shinjukuStn, desc: "신주쿠로 이동하여 쇼핑 계속" },
+                    { time: "17:40 - 18:10", title: "이동: 시부야역 → 신주쿠역", price: 170, type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.shinjukuStn, desc: "신주쿠로 이동하여 쇼핑 계속" },
                     { time: "18:10 - 19:30", title: "저녁: 신주쿠 루미네/뉴우먼", price: 3000, loc: LOC.shinjukuStn, desc: "쇼핑몰 내 맛집 식사 (일행과 분리 식사)" },
                     { time: "19:30 - 21:40", title: "심야 쇼핑: 이세탄/돈키호테", loc: LOC.kabukicho, desc: "이세탄 맨즈, 가부키초 인근 돈키호테 쇼핑" },
                     { time: "21:40 - 23:30", title: "어트랙션 팀 재합류", loc: LOC.kabukicho, desc: "가부키초에서 다같이 뒷풀이" },
-                    { time: "23:30 - 24:00", title: "숙소 복귀", type: "move", transport: "train", from: LOC.shinjukuStn, to: LOC.uguisudani, desc: "JR 야마노테선 막차" }
+                    { time: "23:30 - 24:00", title: "숙소 복귀", price: 210, type: "move", transport: "train", from: LOC.shinjukuStn, to: LOC.uguisudani, desc: "JR 야마노테선 막차" }
                 ]
             },
             // [NEW] Day 7: Otaku vs City
@@ -576,16 +576,16 @@
                 day: 7,
                 items: [
                     { time: "00:00 - 10:30", title: "취침 및 기상 준비", loc: LOC.uenoHotel, desc: "느긋하게 일어나서 아침 겸 점심 식사" },
-                    { time: "10:30 - 11:15", title: "이동: 우구이수다니 → 나카노역", type: "move", transport: "train", from: LOC.uguisudani, to: LOC.nakanoStn, desc: "신주쿠 환승 주오선(쾌속), 약 45분" },
+                    { time: "10:30 - 11:15", title: "이동: 우구이수다니 → 나카노역", price: 230, type: "move", transport: "train", from: LOC.uguisudani, to: LOC.nakanoStn, desc: "신주쿠 환승 주오선(쾌속), 약 45분" },
                     { time: "11:15 - 12:00", title: "이른 점심: 나카노 브로드웨이", loc: LOC.nakanoBroadway, desc: "'데일리 치코'(8단 아이스크림) or 지하 식당가" },
                     { time: "12:00 - 14:30", title: "탐굴: 나카노 브로드웨이", loc: LOC.nakanoBroadway, pois: POIS.nakano_detailed, desc: "만다라케 Galaxy, Deep 집중 공략" },
-                    { time: "14:30 - 15:00", title: "이동: 나카노역 → 아키하바라역", type: "move", transport: "train", from: LOC.nakanoStn, to: LOC.radioKaikan, desc: "주오-소부선(노란색) 환승 없음, 약 30분" },
+                    { time: "14:30 - 15:00", title: "이동: 나카노역 → 아키하바라역", price: 230, type: "move", transport: "train", from: LOC.nakanoStn, to: LOC.radioKaikan, desc: "주오-소부선(노란색) 환승 없음, 약 30분" },
                     { time: "15:00 - 15:15", title: "코인 로커 짐 보관", loc: LOC.akibaLocker, desc: "전리품 보관 (아키하바라역/라디오회관)" },
                     { time: "15:15 - 17:00", title: "쇼핑 1차전: 라디오회관", loc: LOC.radioKaikan, pois: POIS.akiba_deep_shopping, desc: "아미아미, K-Books, 렌탈 쇼케이스 공략" },
                     { time: "17:00 - 18:30", title: "쇼핑 2차전: 심연의 본진", loc: LOC.traderHQ, desc: "트레이더 본점(PC/미소녀), 멜론북스" },
                     { time: "18:30 - 19:30", title: "저녁: 아키바 스타일", loc: LOC.gogoCurry, desc: "고고 카레 or 규동 산보 등 든든하게 해결" },
                     { time: "19:30 - 20:30", title: "쇼핑 3차전: 스루가야 & 라신반", loc: LOC.surugayaDeep, desc: "식사 후 소화시킬 겸 덤핑 굿즈 디깅" },
-                    { time: "20:30 - 21:00", title: "이동: 아키하바라 → 숙소", type: "move", transport: "train", from: LOC.radioKaikan, to: LOC.uguisudani, desc: "짐 찾아서 복귀 (약 30분)" },
+                    { time: "20:30 - 21:00", title: "이동: 아키하바라 → 숙소", price: 150, type: "move", transport: "train", from: LOC.radioKaikan, to: LOC.uguisudani, desc: "짐 찾아서 복귀 (약 30분)" },
                     { time: "21:00 - 24:00", title: "숙소 도착 및 언박싱", loc: LOC.uenoHotel, desc: "편의점 간식과 함께 전리품 감상회" }
                 ],
                 // 도쿄 시내 팟 (5명)
@@ -670,7 +670,6 @@
             document.getElementById('map-info').classList.add('hidden');
             layers.forEach(l => map.removeLayer(l)); layers = [];
             
-            // Revert map view
             let dayData = SCHEDULE[currentDay];
             let items = ( (currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
             const first = items.find(i => i.loc || i.from);
@@ -809,11 +808,9 @@
             document.getElementById('map-info').classList.add('hidden', 'opacity-0', 'translate-y-[-20px]');
         }
 
-        // [UPDATED] 팀 선택 함수 (Day 7 로직 추가)
         function selectTeam(team) {
             currentTeam = team;
             
-            // 스타일 업데이트
             const btnAtt = document.getElementById('btn-team-attraction');
             const btnShop = document.getElementById('btn-team-shopping');
             
@@ -825,10 +822,8 @@
                 btnShop.className = 'team-toggle team-active px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm';
             }
             
-            // 타임라인 다시 그리기
             renderTimeline(currentDay); 
             
-            // 맵 뷰 초기화
             const dayData = SCHEDULE[currentDay];
             const items = (team === 'shopping') ? dayData.items_shopping : dayData.items;
             const first = items.find(i => i.loc || i.from);
@@ -848,7 +843,6 @@
             
             list.innerHTML = '';
             
-            // 1. 팀 선택기 표시 여부 및 텍스트 변경
             if (dayIdx === 5) { // 6일차
                 teamSelector.classList.remove('hidden');
                 btnAtt.innerHTML = "🎢 어트랙션 팟 (5명)";
@@ -861,14 +855,13 @@
                 teamSelector.classList.add('hidden');
             }
 
-            // 2. 범례 표시 로직
-            if (dayIdx === 3) { // 4일차 (라멘)
+            if (dayIdx === 3) { 
                 legend.classList.remove('hidden');
                 legend.innerHTML = `
                     <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>A팀: 멘도코로 혼다</span></div>
                     <div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full"></span> <span>B팀: 호타테 비요리</span></div>
                 `;
-            } else if (dayIdx === 5 && currentTeam === 'attraction') { // 6일차 어트랙션 팟일 때만 표시
+            } else if (dayIdx === 5 && currentTeam === 'attraction') { 
                 legend.classList.remove('hidden');
                 legend.innerHTML = `
                     <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>🎢 어트랙션 (5명)</span></div>
@@ -878,7 +871,6 @@
                 legend.classList.add('hidden');
             }
             
-            // 3. 아이템 데이터 선택 (6일차/7일차 분기)
             let items = dayData.items;
             if ((dayIdx === 5 || dayIdx === 6) && currentTeam === 'shopping') {
                 items = dayData.items_shopping;
@@ -952,9 +944,12 @@
         }
 
         function selectDay(idx) {
-	currentDay = idx;
+            currentDay = idx; 
+
             [0,1,2,3,4,5,6].forEach(i => {
                 const btn = document.getElementById(`tab-${i}`);
+                if(!btn) return; 
+
                 if(i===idx) { btn.classList.add('text-indigo-600','border-indigo-600'); btn.classList.remove('text-gray-500'); }
                 else { btn.classList.remove('text-indigo-600','border-indigo-600'); btn.classList.add('text-gray-500'); }
             });
@@ -964,12 +959,11 @@
             else renderTimeline(idx);
             
             const dayData = SCHEDULE[idx];
-            // 6,7일차일때 기본 items(첫번째 탭)으로 위치 잡기
-            const first = dayData.items.find(i => i.loc || i.from);
+            const items = ( (idx === 5 || idx === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
+            const first = items.find(i => i.loc || i.from);
             if(first) map.setView(first.loc || first.from, 13);
         }
 
-        // --- [NEW] Resizing Logic ---
         function initResizer() {
             const resizer = document.getElementById('resizer');
             const sidebar = document.getElementById('sidebar-panel');
@@ -983,33 +977,25 @@
             window.addEventListener('mousemove', (e) => {
                 if (!isResizing) return;
                 
-                // Desktop (Horizontal Resize)
                 if (window.innerWidth >= 768) {
                     const percentage = (e.clientX / window.innerWidth) * 100;
-                    if (percentage > 20 && percentage < 80) { // Limit min/max
+                    if (percentage > 20 && percentage < 80) { 
                         sidebar.style.width = `${percentage}%`;
-                        // Map takes remaining space via flex
                     }
                 } 
-                // Mobile (Vertical Resize)
                 else {
-                    // Adjust for header height (approx 50px) if needed, 
-                    // but raw Y coordinate usually works fine for % calculation
                     const percentage = (e.clientY / window.innerHeight) * 100;
                     if (percentage > 20 && percentage < 80) {
                         sidebar.style.height = `${percentage}%`;
-                        // Map takes remaining space via flex
                     }
                 }
-                
-                map.invalidateSize(); // Prevent map gray area
+                map.invalidateSize(); 
             });
 
             window.addEventListener('touchmove', (e) => {
                 if (!isResizing) return;
                 const touch = e.touches[0];
                 
-                // Similar logic for Touch
                 if (window.innerWidth >= 768) {
                     const percentage = (touch.clientX / window.innerWidth) * 100;
                     if (percentage > 20 && percentage < 80) {
