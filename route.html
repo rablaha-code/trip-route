@@ -1,75 +1,156 @@
-<!DOCTYPE html><html lang="ko"><head>
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>일본 여행 일정</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
-        body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
-        #map { height: 100%; width: 100%; z-index: 0; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 0;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
         /* Marker Animations */
         .pulse-icon {
-            background-color: #ef4444; border-radius: 50%; width: 12px; height: 12px;
-            box-shadow: 0 0 0 rgba(239, 68, 68, 0.4); animation: pulse 2s infinite;
+            background-color: #ef4444;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            box-shadow: 0 0 0 rgba(239, 68, 68, 0.4);
+            animation: pulse 2s infinite;
         }
+
         .pulse-icon-blue {
-            background-color: #3b82f6; border-radius: 50%; width: 12px; height: 12px;
-            box-shadow: 0 0 0 rgba(59, 130, 246, 0.4); animation: pulse-blue 2s infinite;
+            background-color: #3b82f6;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            box-shadow: 0 0 0 rgba(59, 130, 246, 0.4);
+            animation: pulse-blue 2s infinite;
         }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-        
-        .schedule-item { transition: all 0.2s; border-left: 3px solid transparent; user-select: none; }
-        .schedule-item:hover { transform: translateX(4px); border-left-color: #cbd5e1; }
-        
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .schedule-item {
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            user-select: none;
+        }
+
+        .schedule-item:hover {
+            transform: translateX(4px);
+            border-left-color: #cbd5e1;
+        }
+
         /* Active & Selected States */
-        .active-card { border-left-color: #3b82f6 !important; background-color: #eff6ff !important; }
-        .multi-selected { 
-            background-color: #dbeafe !important; 
+        .active-card {
+            border-left-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+        }
+
+        .multi-selected {
+            background-color: #dbeafe !important;
             border-left-color: #2563eb !important;
             border: 1px solid #93c5fd !important;
         }
-        
-        .split-badge-a { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .split-badge-b { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-        .split-badge-shop { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
-        
+
+        .split-badge-a {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .split-badge-b {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        .split-badge-shop {
+            background: #f3e8ff;
+            color: #6b21a8;
+            border: 1px solid #e9d5ff;
+        }
+
         /* Custom Popup */
-        .leaflet-popup-content-wrapper { border-radius: 12px; padding: 0; overflow: hidden; }
-        .leaflet-popup-content { margin: 0; width: 280px !important; }
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            width: 280px !important;
+        }
 
         /* Collapse Animation */
         #info-content {
             transition: max-height 0.3s ease-out, opacity 0.3s ease-out, padding 0.3s;
             overflow: hidden;
         }
+
         .collapsed-content {
             max-height: 0 !important;
             opacity: 0 !important;
             padding-top: 0 !important;
             padding-bottom: 0 !important;
         }
-        .rotate-180 { transform: rotate(180deg); }
+
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
 
         /* Numbered Marker for Route */
         .number-icon {
-            background: #2563eb; color: white; border-radius: 50%;
-            text-align: center; line-height: 24px; font-weight: bold;
-            font-size: 14px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+            font-size: 14px;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
         /* Team Toggle Switch */
         .team-toggle {
             transition: all 0.3s ease;
         }
+
         .team-active {
             background-color: #4f46e5;
             color: white;
             border-color: #4f46e5;
         }
+
         .team-inactive {
             background-color: white;
             color: #6b7280;
@@ -86,62 +167,112 @@
             align-items: center;
             justify-content: center;
         }
-        #resizer:hover { background-color: #94a3b8; }
-        
+
+        #resizer:hover {
+            background-color: #94a3b8;
+        }
+
         /* Mobile: Horizontal Bar */
         @media (max-width: 768px) {
-            #resizer { width: 100%; height: 12px; cursor: row-resize; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
-            #resizer i { transform: rotate(0deg); }
+            #resizer {
+                width: 100%;
+                height: 12px;
+                cursor: row-resize;
+                border-top: 1px solid #e2e8f0;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            #resizer i {
+                transform: rotate(0deg);
+            }
         }
-        
+
         /* Desktop: Vertical Bar */
         @media (min-width: 768px) {
-            #resizer { width: 12px; height: 100%; cursor: col-resize; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; }
-            #resizer i { transform: rotate(90deg); }
+            #resizer {
+                width: 12px;
+                height: 100%;
+                cursor: col-resize;
+                border-left: 1px solid #e2e8f0;
+                border-right: 1px solid #e2e8f0;
+            }
+
+            #resizer i {
+                transform: rotate(90deg);
+            }
         }
-    </style></head><body class="bg-slate-100 h-screen flex flex-col md:flex-row overflow-hidden">
+    </style>
+</head>
+
+<body class="bg-slate-100 h-screen flex flex-col md:flex-row overflow-hidden">
 
     <div class="md:hidden bg-indigo-600 text-white p-3 shadow-md z-20 flex justify-between items-center shrink-0">
         <h1 class="font-bold text-lg">🇯🇵 5박 7일 일정표</h1>
         <span id="total-cost-mobile" class="text-xs bg-indigo-700 px-2 py-1 rounded font-mono"></span>
     </div>
 
-    <div id="sidebar-panel" class="w-full md:w-[35%] h-[50%] md:h-full flex flex-col bg-white shadow-xl z-10 relative min-w-[200px] min-h-[150px]">
+    <div id="sidebar-panel"
+        class="w-full md:w-[35%] h-[50%] md:h-full flex flex-col bg-white shadow-xl z-10 relative min-w-[200px] min-h-[150px]">
         <div class="hidden md:block p-5 bg-indigo-600 text-white shadow-md shrink-0">
             <h1 class="text-2xl font-bold">🇯🇵 Japan Travel</h1>
             <p class="text-indigo-100 text-sm mt-1">오사카 • 교토 • 도쿄 (1일차 ~ 7일차)</p>
             <div class="mt-3 flex justify-between items-center">
-                <div id="total-cost-desktop" class="bg-indigo-800 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wide"></div>
-                <button onclick="clearSelection()" id="btn-reset-select" class="hidden text-xs bg-white text-indigo-600 px-2 py-1 rounded font-bold hover:bg-gray-100">선택 초기화</button>
+                <div id="total-cost-desktop"
+                    class="bg-indigo-800 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wide"></div>
+                <button onclick="clearSelection()" id="btn-reset-select"
+                    class="hidden text-xs bg-white text-indigo-600 px-2 py-1 rounded font-bold hover:bg-gray-100">선택
+                    초기화</button>
             </div>
         </div>
 
         <div class="flex overflow-x-auto bg-white border-b shrink-0 scrollbar-hide whitespace-nowrap">
-            <button onclick="selectDay(0)" id="tab-0" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">1일차<br><span class="text-xs font-normal">오사카</span></button>
-            <button onclick="selectDay(1)" id="tab-1" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">2일차<br><span class="text-xs font-normal">USJ</span></button>
-            <button onclick="selectDay(2)" id="tab-2" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">3일차<br><span class="text-xs font-normal">교토</span></button>
-            <button onclick="selectDay(3)" id="tab-3" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">4일차<br><span class="text-xs font-normal">도쿄</span></button>
-            <button onclick="selectDay(4)" id="tab-4" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">5일차<br><span class="text-xs font-normal">자유</span></button>
-            <button onclick="selectDay(5)" id="tab-5" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">6일차<br><span class="text-xs font-normal">팀 분리</span></button>
-            <button onclick="selectDay(6)" id="tab-6" class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">7일차<br><span class="text-xs font-normal">나카노</span></button>
+            <button onclick="selectDay(0)" id="tab-0"
+                class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">1일차<br><span
+                    class="text-xs font-normal">오사카</span></button>
+            <button onclick="selectDay(1)" id="tab-1"
+                class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">2일차<br><span
+                    class="text-xs font-normal">USJ</span></button>
+            <button onclick="selectDay(2)" id="tab-2"
+                class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">3일차<br><span
+                    class="text-xs font-normal">교토</span></button>
+            <button onclick="selectDay(3)" id="tab-3"
+                class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">4일차<br><span
+                    class="text-xs font-normal">도쿄</span></button>
+            <button onclick="selectDay(4)" id="tab-4"
+                class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">5일차<br><span
+                    class="text-xs font-normal">자유</span></button>
+            <button onclick="selectDay(5)" id="tab-5"
+                class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">6일차<br><span
+                    class="text-xs font-normal">팀 분리</span></button>
+            <button onclick="selectDay(6)" id="tab-6"
+                class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">7일차<br><span
+                    class="text-xs font-normal">나카노</span></button>
+            <button onclick="selectDay(7)" id="tab-7"
+                class="flex-shrink-0 flex-1 min-w-[70px] py-3 text-center border-b-2 text-sm font-semibold text-gray-500 hover:text-indigo-600">8일차<br><span
+                    class="text-xs font-normal">귀국</span></button>
         </div>
 
         <div id="team-selector" class="hidden p-2 bg-slate-50 border-b flex justify-center gap-2 shrink-0">
-            <button onclick="selectTeam('attraction')" id="btn-team-attraction" class="team-toggle team-active px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm">
+            <button onclick="selectTeam('attraction')" id="btn-team-attraction"
+                class="team-toggle team-active px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm">
                 🎢 어트랙션 팟 (5명)
             </button>
-            <button onclick="selectTeam('shopping')" id="btn-team-shopping" class="team-toggle team-inactive px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm">
+            <button onclick="selectTeam('shopping')" id="btn-team-shopping"
+                class="team-toggle team-inactive px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm">
                 🛍️ 쇼핑 팟 (3명)
             </button>
         </div>
 
         <div id="schedule-list" class="flex-1 overflow-y-auto p-2 md:p-4 space-y-3 bg-slate-50 pb-20 md:pb-5"></div>
-        
-        <div id="multi-select-hint" class="absolute bottom-2 left-0 w-full text-center pointer-events-none transition-opacity duration-500 opacity-100">
-            <span class="bg-gray-800 text-white text-xs px-3 py-1.5 rounded-full shadow-lg opacity-80">💡 길게 눌러 여러 개 선택 가능</span>
+
+        <div id="multi-select-hint"
+            class="absolute bottom-2 left-0 w-full text-center pointer-events-none transition-opacity duration-500 opacity-100">
+            <span class="bg-gray-800 text-white text-xs px-3 py-1.5 rounded-full shadow-lg opacity-80">💡 길게 눌러 여러 개 선택
+                가능</span>
         </div>
 
-        <div id="split-legend" class="absolute bottom-0 w-full bg-white border-t p-2 text-xs flex justify-around hidden shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
+        <div id="split-legend"
+            class="absolute bottom-0 w-full bg-white border-t p-2 text-xs flex justify-around hidden shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
         </div>
     </div>
 
@@ -151,16 +282,22 @@
 
     <div id="map-container" class="flex-1 w-full h-[50%] md:h-full relative min-w-[100px] min-h-[100px]">
         <div id="map"></div>
-        
-        <div id="map-info" class="absolute top-5 right-5 bg-white rounded-xl shadow-2xl hidden md:flex flex-col z-[400] w-80 border border-gray-100 transition-all duration-300 opacity-0 translate-y-[-20px]">
-            <div class="flex justify-between items-center p-4 bg-gray-50 border-b cursor-pointer rounded-t-xl" onclick="toggleInfo()">
+
+        <div id="map-info"
+            class="absolute top-5 right-5 bg-white rounded-xl shadow-2xl hidden md:flex flex-col z-[400] w-80 border border-gray-100 transition-all duration-300 opacity-0 translate-y-[-20px]">
+            <div class="flex justify-between items-center p-4 bg-gray-50 border-b cursor-pointer rounded-t-xl"
+                onclick="toggleInfo()">
                 <h3 id="info-title" class="font-bold text-gray-800 truncate pr-2"></h3>
                 <div class="flex gap-3 text-gray-400">
-                    <button id="toggle-icon" class="hover:text-blue-500 transition-transform duration-300"><i class="fas fa-chevron-up"></i></button>
-                    <button onclick="event.stopPropagation(); closeInfo()" class="hover:text-red-500 transition-colors"><i class="fas fa-times"></i></button>
+                    <button id="toggle-icon" class="hover:text-blue-500 transition-transform duration-300"><i
+                            class="fas fa-chevron-up"></i></button>
+                    <button onclick="event.stopPropagation(); closeInfo()"
+                        class="hover:text-red-500 transition-colors"><i class="fas fa-times"></i></button>
                 </div>
             </div>
-            <div id="info-content" class="text-sm text-gray-600 space-y-2 max-h-[60vh] overflow-y-auto p-4 bg-white rounded-b-xl collapsed-content"></div>
+            <div id="info-content"
+                class="text-sm text-gray-600 space-y-2 max-h-[60vh] overflow-y-auto p-4 bg-white rounded-b-xl collapsed-content">
+            </div>
         </div>
     </div>
 
@@ -171,7 +308,7 @@
         const LOC = {
             kix: [34.4325, 135.2304],
             nambaStn: [34.6618, 135.5021],
-            osakaHotel: [34.6635, 135.4975], 
+            osakaHotel: [34.6635, 135.4975],
             tendonMakino: [34.6682, 135.5036],
             dendenTown: [34.6593, 135.5057],
             glicoMan: [34.6687, 135.5013],
@@ -181,6 +318,7 @@
             sumibi: [34.6675, 135.5000],
             usj: [34.6654, 135.4323],
             fukutaro: [34.6657, 135.5042],
+            atthe21: [34.6668, 135.5038],
             fushimiInari: [34.9671, 135.7726],
             yamamoto: [35.0157, 135.7825],
             kiyomizu: [34.9948, 135.7850],
@@ -190,6 +328,8 @@
             pontocho: [35.0062, 135.7716],
             gion: [35.0035, 135.7750],
             yasohachi: [35.0055, 135.7710],
+            bingo: [35.0035, 135.7705],
+            nishiki: [35.0050, 135.7630],
             roundOne: [34.6653, 135.5039],
             shinOsaka: [34.7334, 135.5003],
             tokyoStn: [35.6812, 139.7671],
@@ -198,8 +338,8 @@
             sensoji: [35.7147, 139.7966],
             akihabara: [35.6983, 139.7730],
             ameyoko: [35.7088, 139.7741],
-            honda: [35.6997, 139.7754], 
-            hotate: [35.6963, 139.7856], 
+            honda: [35.6997, 139.7754],
+            hotate: [35.6963, 139.7856],
             gigo: [35.6994, 139.7712],
             iriyaStn: [35.7210, 139.7845],
             kamiyachoStn: [35.6627, 139.7451],
@@ -218,7 +358,7 @@
             shibuyaStn: [35.6580, 139.7016],
             parco: [35.6620, 139.6987],
             miyashita: [35.6615, 139.7020],
-            shibuyaSky: [35.6585, 139.7023], 
+            shibuyaSky: [35.6585, 139.7023],
             omotesando: [35.6652, 139.7123],
             harajuku: [35.6702, 139.7026],
             // [NEW] Day 7 Locations
@@ -230,7 +370,23 @@
             gogoCurry: [35.6985, 139.7745],
             sanbo: [35.7005, 139.7710],
             surugayaDeep: [35.6990, 139.7715],
-            akibaLocker: [35.6984, 139.7731]
+            akibaLocker: [35.6984, 139.7731],
+            // [NEW] Day 6 Suburbs Locations
+            kamakuraStn: [35.3190, 139.5501],
+            tsurugaoka: [35.3260, 139.5564],
+            komachi: [35.3228, 139.5528],
+            akimoto: [35.3220, 139.5520],
+            haseStn: [35.3113, 139.5361],
+            daibutsu: [35.3167, 139.5357],
+            kamakurakoko: [35.3067, 139.5015],
+            enoshimaIsland: [35.3013, 139.4808],
+            seaCandle: [35.2998, 139.4789],
+            kataseEnoshima: [35.3087, 139.4830],
+            tonkatsusaito: [35.3087, 139.4830],
+            // [NEW] Day 8 Locations
+            ginza: [35.6712, 139.7665],
+            ginzaBairin: [35.6705, 139.7645],
+            narita: [35.7719, 140.3929]
         };
 
         const POIS = {
@@ -241,7 +397,20 @@
                 { name: "애니메이트", pos: [34.6605, 135.5050] },
                 { name: "스루가야", pos: [34.6590, 135.5052] },
                 { name: "라신반", pos: [34.6598, 135.5056] },
-                { name: "오타로드", pos: [34.6590, 135.5065] }
+                { name: "오타로드", pos: [34.6590, 135.5065] },
+                { name: "GEE Store", pos: [34.6630, 135.5045] },
+                { name: "신장서점 (Shinjang)", pos: [34.6600, 135.5050] },
+                { name: "만다라케 그랜드카오스", pos: [34.6730, 135.4995] },
+                { name: "K-Books", pos: [34.6612, 135.5055] },
+                { name: "토라노아나", pos: [34.6608, 135.5053] },
+                { name: "Yellow Submarine", pos: [34.6615, 135.5058] },
+                { name: "Volks Osaka Showroom", pos: [34.6620, 135.5060] },
+                { name: "슈퍼 포테이토 (레트로 게임)", pos: [34.6610, 135.5058] },
+                { name: "레트로 게임 캠프", pos: [34.6605, 135.5055] },
+                { name: "비디오 게임 탐정단 (Game Tanteidan)", pos: [34.6598, 135.5062] },
+                { name: "스루가야 닛폰바시점", pos: [34.6590, 135.5052] },
+                { name: "조신 슈퍼 키즈 랜드 (건담/모형)", pos: [34.6595, 135.5055] },
+                { name: "드래곤퀘스트 로손", pos: [34.6592, 135.5068] }
             ],
             dotonbori_views: [
                 { name: "글리코상 (메인)", pos: [34.6687, 135.5013] },
@@ -249,20 +418,33 @@
                 { name: "킨류 라멘 (용 간판)", pos: [34.6685, 135.5030] },
                 { name: "겐로쿠 스시 (거대 스시)", pos: [34.6682, 135.5010] },
                 { name: "오사카 오쇼 (거대 교자)", pos: [34.6686, 135.5020] },
-                { name: "쿠쿠루 (거대 문어)", pos: [34.6688, 135.5015] }
+                { name: "쿠쿠루 (거대 문어)", pos: [34.6688, 135.5015] },
+                { name: "쿠시카츠 다루마 (아저씨)", pos: [34.6680, 135.5025] },
+                { name: "즈보라야 (복어 - 폐업했지만 랜드마크)", pos: [34.6683, 135.5028] },
+                { name: "쇼치쿠좌 (극장)", pos: [34.6678, 135.5018] },
+                { name: "돈키호테 관람차", pos: [34.6689, 135.5050] },
+                { name: "타코야키 와나카", pos: [34.6675, 135.5035] },
+                { name: "앗치치 혼포 (타코야키)", pos: [34.6687, 135.5032] },
+                { name: "미즈노 (오코노미야키)", pos: [34.6680, 135.5038] },
+                { name: "킨류 라멘 (용 간판)", pos: [34.6685, 135.5030] },
+                { name: "쿠이다오레 타로 (북치는 인형)", pos: [34.6682, 135.5028] }
             ],
             kuromon: [
                 { name: "마구로야 쿠로긴 (참치)", pos: [34.6655, 135.5075] },
                 { name: "마루젠 식육점 (고베규)", pos: [34.6652, 135.5072] },
                 { name: "이시바시 식품 (오뎅)", pos: [34.6656, 135.5077] },
                 { name: "화이트 딸기 & 두유", pos: [34.6650, 135.5076] },
-                { name: "우오후쿠 (가리비/성게)", pos: [34.6653, 135.5073] }
+                { name: "우오후쿠 (가리비/성게)", pos: [34.6653, 135.5073] },
+                { name: "마루젠 식육점 (고베규 꼬치)", pos: [34.6652, 135.5072] },
+                { name: "천지인 (부타동)", pos: [34.6645, 135.5068] },
+                { name: "오니시 유통 (야키니쿠 꼬치)", pos: [34.6658, 135.5078] },
+                { name: "Minami (후구/복어)", pos: [34.6655, 135.5080] }
             ],
             usj: [
-                { name: "슈퍼 닌텐도 월드", pos: [34.6660, 135.4290] },
-                { name: "위저딩 월드 (해리포터)", pos: [34.6640, 135.4280] },
-                { name: "미니언 파크", pos: [34.6620, 135.4310] },
-                { name: "쥬라기 공원", pos: [34.6625, 135.4300] }
+                { name: "슈퍼 닌텐도 월드", pos: [34.6655, 135.4330] },
+                { name: "위저딩 월드 (해리포터)", pos: [34.6654, 135.4323] },
+                { name: "미니언 파크", pos: [34.6654, 135.4320] },
+                { name: "쥬라기 공원", pos: [34.6644, 135.4306] }
             ],
             fushimi: [
                 { name: "센본 토리이", pos: [34.9665, 135.7750] },
@@ -281,14 +463,22 @@
                 { name: "요지야", pos: [34.9962, 135.7818] },
                 { name: "시치미야 혼포", pos: [34.9955, 135.7828] },
                 { name: "이노다 커피", pos: [34.9960, 135.7810] },
-                { name: "오카루 (카레우동)", pos: [35.0038, 135.7745] } 
+                { name: "오카루 (카레우동)", pos: [35.0038, 135.7745] },
+                { name: "카사기야 (단팥죽)", pos: [34.9970, 135.7812] },
+                { name: "후지나미 (미타라시 당고)", pos: [34.9968, 135.7813] },
+                { name: "Malebranche (녹차 쿠키)", pos: [34.9958, 135.7825] },
+                { name: "Seveneya (칠미)", pos: [34.9955, 135.7828] },
+                { name: "아사히도 (도자기)", pos: [34.9958, 135.7820] },
+                { name: "카쇼가마 도예 교실", pos: [34.9965, 135.7818] },
+                { name: "이노다 커피 (분점)", pos: [34.9960, 135.7810] },
+                { name: "요지야 (기요미즈점)", pos: [34.9962, 135.7818] },
+                { name: "스누피 초콜릿", pos: [34.9972, 135.7813] }
             ],
             kamo_cafes: [
                 { name: "스타벅스 산조오하시", pos: [35.0090, 135.7718] },
                 { name: "카와 카페 (Kawa)", pos: [35.0015, 135.7705] },
                 { name: "살롱 드 로얄", pos: [35.0110, 135.7715] },
-                { name: ".S (닷 에스)", pos: [35.0130, 135.7725] },
-                { name: "와이프 앤 허즈번드", pos: [35.0450, 135.7590] }
+                { name: ".S (닷 에스)", pos: [35.0130, 135.7725] }
             ],
             gion: [
                 { name: "하나미코지 (메인)", pos: [35.0035, 135.7750] },
@@ -297,14 +487,16 @@
                 { name: "카기젠 요시후사", pos: [35.0039, 135.7748] },
                 { name: "기온 키나나", pos: [35.0025, 135.7755] },
                 { name: "타츠미 다리", pos: [35.0055, 135.7735] },
-                { name: "미나미좌 (극장)", pos: [35.0040, 135.7725] }
+                { name: "미나미좌 (극장)", pos: [35.0040, 135.7725] },
+                { name: "요지야 (화장품)", pos: [35.0040, 135.7750] }
             ],
             pontocho: [
                 { name: "폰토초 골목", pos: [35.0062, 135.7716] },
                 { name: "유즈겐 (유자나베)", pos: [35.0058, 135.7715] },
                 { name: "모츠나베 토라야", pos: [35.0060, 135.7715] },
                 { name: "교토 야키니쿠 엔엔", pos: [35.0045, 135.7712] },
-                { name: "갓파 스시", pos: [35.0050, 135.7713] }
+                { name: "갓파 스시", pos: [35.0050, 135.7713] },
+                { name: "폰토초 공원", pos: [35.0065, 135.7718] }
             ],
             sensoji: [
                 { name: "카미나리몬 (제등)", pos: [35.7111, 139.7964] },
@@ -318,7 +510,11 @@
                 { name: "아사쿠사 코코노에", pos: [35.7141, 139.7965] },
                 { name: "화월당 (메론빵)", pos: [35.7135, 139.7950] },
                 { name: "실크 푸딩", pos: [35.7118, 139.7968] },
-                { name: "후나와 (양갱)", pos: [35.7120, 139.7964] }
+                { name: "후나와 (양갱)", pos: [35.7120, 139.7964] },
+                { name: "카게츠도 (점보 메론빵)", pos: [35.7135, 139.7950] },
+                { name: "아사쿠사 멘치 (고로케)", pos: [35.7128, 139.7958] },
+                { name: "요로이야 라멘", pos: [35.7130, 139.7962] },
+                { name: "우메조노 (디저트/빙수)", pos: [35.7125, 139.7955] }
             ],
             ameyoko: [
                 { name: "시무라 쇼텐 (초콜릿)", pos: [35.7095, 139.7745] },
@@ -348,7 +544,9 @@
                 { name: "트레이더 본점", pos: [35.7010, 139.7718] },
                 { name: "스루가야", pos: [35.6990, 139.7715] },
                 { name: "HEY 아케이드", pos: [35.6995, 139.7705] },
-                { name: "GIGO 3호관", pos: [35.6992, 139.7710] }
+                { name: "GIGO 3호관", pos: [35.6992, 139.7710] },
+                { name: "아미아미 2호점", pos: [35.7008, 139.7722] },
+                { name: "에뮤즈 타워 (AmiAmi)", pos: [35.6980, 139.7720] }
             ],
             zojoji_view: [
                 { name: "조조지 본당", pos: [35.6574, 139.7482] },
@@ -362,21 +560,21 @@
                 { name: "돈키호테 가부키초", pos: [35.6940, 139.7025] }
             ],
             shibuya_attract: [
-                 { name: "닌텐도 도쿄 (Parco 6F)", pos: [35.6620, 139.6987] },
-                 { name: "점프샵 (Parco 6F)", pos: [35.6620, 139.6987] },
-                 { name: "포켓몬 센터", pos: [35.6620, 139.6987] },
-                 { name: "휴먼 메이드 (Parco 1F)", pos: [35.6620, 139.6987] },
-                 { name: "Kith Tokyo (Miyashita)", pos: [35.6615, 139.7020] },
-                 { name: "미야시타 공원 (옥상)", pos: [35.6615, 139.7020] }
+                { name: "닌텐도 도쿄 (Parco 6F)", pos: [35.6620, 139.6987] },
+                { name: "점프샵 (Parco 6F)", pos: [35.6620, 139.6987] },
+                { name: "포켓몬 센터", pos: [35.6620, 139.6987] },
+                { name: "휴먼 메이드 (Parco 1F)", pos: [35.6620, 139.6987] },
+                { name: "Kith Tokyo (Miyashita)", pos: [35.6615, 139.7020] },
+                { name: "미야시타 공원 (옥상)", pos: [35.6615, 139.7020] }
             ],
             omotesando_shop: [
-                 { name: "오모테산도 힐즈", pos: [35.6670, 139.7100] },
-                 { name: "메종 키츠네", pos: [35.6650, 139.7130] },
-                 { name: "애플 오모테산도", pos: [35.6655, 139.7125] },
-                 { name: "자이레(GYRE)", pos: [35.6665, 139.7075] },
-                 { name: "키디랜드 (캐릭터)", pos: [35.6675, 139.7065] },
-                 { name: "도큐 플라자 (입구)", pos: [35.6695, 139.7030] },
-                 { name: "슈프림 하라주쿠", pos: [35.6705, 139.7035] }
+                { name: "오모테산도 힐즈", pos: [35.6670, 139.7100] },
+                { name: "메종 키츠네", pos: [35.6650, 139.7130] },
+                { name: "애플 오모테산도", pos: [35.6655, 139.7125] },
+                { name: "자이레(GYRE)", pos: [35.6665, 139.7075] },
+                { name: "키디랜드 (캐릭터)", pos: [35.6675, 139.7065] },
+                { name: "도큐 플라자 (입구)", pos: [35.6695, 139.7030] },
+                { name: "슈프림 하라주쿠", pos: [35.6705, 139.7035] }
             ],
             azabudai_shops: [
                 { name: "% 아라비카 (B1)", pos: [35.6605, 139.7410] },
@@ -403,7 +601,104 @@
                 { name: "멜론북스 (동인지)", pos: [35.6990, 139.7715] },
                 { name: "스루가야 아키하바라역점", pos: [35.6985, 139.7725] },
                 { name: "라신반 아키하바라", pos: [35.6995, 139.7713] },
-                { name: "코토부키야", pos: [35.6998, 139.7711] }
+                { name: "코토부키야", pos: [35.6998, 139.7711] },
+                { name: "BEEP (레트로 PC/게임)", pos: [35.7015, 139.7712] },
+                { name: "포퐁데타 (철도모형)", pos: [35.6995, 139.7708] },
+                { name: "슈퍼 포테이토 (레트로관)", pos: [35.6992, 139.7705] },
+                { name: "타마시 네이션즈 (반다이)", pos: [35.6985, 139.7725] }
+            ],
+            americamura: [
+                { name: "BIG STEP", pos: [34.6720, 135.4990] },
+                { name: "삼각공원 (Sankaku)", pos: [34.6722, 135.4983] },
+                { name: "코가류 타코야키", pos: [34.6723, 135.4982] },
+                { name: "만다라케 그랜드카오스", pos: [34.6730, 135.4995] },
+                { name: "SPINNS Vintage (빈티지 의류)", pos: [34.6725, 135.4988] },
+                { name: "KINJI (대형 구제샵)", pos: [34.6720, 135.4990] },
+                { name: "Vancy (레트로 소품)", pos: [34.6718, 135.4985] },
+                { name: "코가류 (타코야키 본점)", pos: [34.6723, 135.4982] },
+                { name: "Long Softcream (아이스크림)", pos: [34.6728, 135.4980] }
+            ],
+            shinsaibashi: [
+                { name: "파르코 (포켓몬/점프)", pos: [34.6735, 135.5015] },
+                { name: "다이마루 백화점", pos: [34.6738, 135.5012] },
+                { name: "유니클로 플래그십", pos: [34.6740, 135.5018] }
+            ],
+            nishiki: [
+                { name: "카이 (타코타마고)", pos: [35.0050, 135.7640] },
+                { name: "타나카 케이란 (계란)", pos: [35.0051, 135.7635] },
+                { name: "콘나몬자 (두유도넛)", pos: [35.0052, 135.7638] },
+                { name: "스누피 차야", pos: [35.0053, 135.7632] },
+                { name: "다이야스 (츠케모노/절임)", pos: [35.0048, 135.7615] },
+                { name: "미키 케이란 (계란말이)", pos: [35.0051, 135.7628] },
+                { name: "오이스터 바 다이야스", pos: [35.0049, 135.7618] },
+                { name: "아리츠구 (칼/조리도구)", pos: [35.0052, 135.7625] }
+            ],
+            komachi: [
+                { name: "Giraffa (카레빵)", pos: [35.3210, 139.5515] },
+                { name: "마메야 (콩과자)", pos: [35.3225, 139.5525] },
+                { name: "동구리 공화국", pos: [35.3218, 139.5520] },
+                { name: "카마쿠라 챠차 (말차)", pos: [35.3195, 139.5505] }
+            ],
+            enoshima: [
+                { name: "에노시마 신사", pos: [35.3005, 139.4795] },
+                { name: "벤자이텐 나카미세", pos: [35.3020, 139.4810] },
+                { name: "이와야 동굴", pos: [35.2975, 139.4760] },
+                { name: "씨캔들 (전망대)", pos: [35.2998, 139.4789] },
+                { name: "i-na cafe (프렌치 토스트)", pos: [35.3025, 139.4820] },
+                { name: "LonCafe (일본 최초 프렌치토스트)", pos: [35.2990, 139.4780] },
+                { name: "토빗초 (시라스동)", pos: [35.3015, 139.4815] },
+                { name: "에노시마 테이 (바다 뷰)", pos: [35.2985, 139.4770] }
+            ],
+            nakano_shops: [
+                { name: "만다라케 본점", pos: [35.7089, 139.6657] },
+                { name: "사라라 (만다라케)", pos: [35.7090, 139.6658] },
+                { name: "Robot Robot", pos: [35.7088, 139.6656] },
+                { name: "TOY BARN", pos: [35.7087, 139.6659] },
+                { name: "라신반", pos: [35.7086, 139.6655] },
+                { name: "Jackroad (시계 전문)", pos: [35.7089, 139.6657] },
+                { name: "Cube Style (피규어 위탁)", pos: [35.7089, 139.6658] },
+                { name: "가챠가챠 (캡슐토이)", pos: [35.7089, 139.6656] },
+                { name: "후지야 페코짱 (기념품)", pos: [35.7089, 139.6655] }
+            ],
+            tokyo_char: [
+                { name: "포켓몬 스토어", pos: [35.6812, 139.7675] },
+                { name: "점프샵", pos: [35.6813, 139.7674] },
+                { name: "동구리 공화국", pos: [35.6811, 139.7676] },
+                { name: "커비 카페 쁘띠", pos: [35.6814, 139.7673] }
+            ],
+            ginza_shop: [
+                { name: "유니클로 (12F)", pos: [35.6712, 139.7665] },
+                { name: "이토야 (문구)", pos: [35.6725, 139.7680] },
+                { name: "미츠코시 백화점", pos: [35.6718, 139.7670] },
+                { name: "도버 스트리트 마켓", pos: [35.6698, 139.7635] },
+                { name: "카페 드 람브르 (전설의 커피)", pos: [35.6695, 139.7650] },
+                { name: "이토야 (대형 문구점)", pos: [35.6725, 139.7680] },
+                { name: "긴자 웨스트 (디저트)", pos: [35.6705, 139.7620] },
+                { name: "산리오 월드 긴자", pos: [35.6735, 139.7655] }
+            ],
+            osaka_hotel_nearby: [
+                { name: "패밀리마트 난바나카", pos: [34.6635, 135.5010] },
+                { name: "세븐일레븐 모토마치 2초메", pos: [34.6640, 135.4970] },
+                { name: "난바 야사카 신사 (사자 머리)", pos: [34.6625, 135.4965] },
+                { name: "난바 파크스", pos: [34.6615, 135.5020] }
+            ],
+            ueno_hotel_nearby: [
+                { name: "세븐일레븐 타이토 우에노 2초메", pos: [35.7075, 139.7740] },
+                { name: "패밀리마트 우에노 나카마치", pos: [35.7080, 139.7735] },
+                { name: "업무슈퍼 (Gyomu Super)", pos: [35.7195, 139.7785] },
+                { name: "이리야 식당", pos: [35.7205, 139.7820] }
+            ],
+            shin_osaka_ekiben: [
+                { name: "에키벤 니기와이 (역도시락)", pos: [34.7335, 135.5005] },
+                { name: "551 호라이 (만두)", pos: [34.7338, 135.5008] },
+                { name: "쿠시카츠 다루마 (포장)", pos: [34.7332, 135.5002] },
+                { name: "리쿠로 오지상 (치즈케이크)", pos: [34.7335, 135.5005] }
+            ],
+            kamehachi: [
+                { name: "쿄 모츠나베 카메하치 본점", pos: [35.0075, 135.7712] }
+            ],
+            honda_akiba: [
+                { name: "멘도코로 혼다 아키하바라", pos: [35.6985, 139.7745] }
             ]
         };
 
@@ -413,12 +708,12 @@
                 items: [
                     { time: "00:00 - 04:00", title: "취침", loc: null, desc: "휴식" },
                     { time: "04:00 - 06:00", title: "기상 및 공항 출발", loc: null, desc: "준비 후 이동" },
-                    { time: "06:00 - 07:30", title: "공항 도착 및 탑승", loc: LOC.kix, desc: "수속 진행" },
+                    { time: "06:00 - 07:30", title: "공항 도착 및 탑승", loc: LOC.kix, desc: "MM172편 (07:30~09:15)" },
                     { time: "07:30 - 09:30", title: "오사카 간사이 공항 도착", loc: LOC.kix, desc: "입국 심사 및 짐 찾기" },
                     { time: "09:30 - 09:43", title: "표 구매(난카이 공항선)", price: 980, loc: LOC.kix, desc: "난바행 티켓 구매" },
                     { time: "09:43 - 10:34", title: "기차 이동 (난바역 도착)", type: "move", transport: "train", from: LOC.kix, to: LOC.nambaStn, desc: "난카이 공항선 탑승" },
-                    { time: "10:34 - 10:50", title: "난바역 → 숙소 (도보)", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.osakaHotel, desc: "짐 보관하러 이동" },
-                    { time: "10:50 - 11:05", title: "숙소 짐 보관", loc: LOC.osakaHotel, desc: "세븐일레븐 오사카 모토마치 2쵸메점" },
+                    { time: "10:34 - 10:50", title: "난바역 → 숙소 (도보)", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.osakaHotel, desc: "짐 보관하러 이동 (오사카 모토마치)" },
+                    { time: "10:50 - 11:05", title: "숙소 짐 보관", loc: LOC.osakaHotel, pois: POIS.osaka_hotel_nearby, desc: "556-0016 Naniwa Ward (근처 편의점/신사 확인)" },
                     { time: "11:05 - 11:45", title: "텐동 마키노 이동 & 웨이팅", type: "move", transport: "walk", from: LOC.osakaHotel, to: LOC.tendonMakino, desc: "점심 대기" },
                     { time: "11:45 - 12:25", title: "점심: 텐동 마키노", price: 2400, loc: LOC.tendonMakino, desc: "텐동 음미" },
                     { time: "12:25 - 12:40", title: "덴덴타운으로 이동", type: "move", transport: "walk", from: LOC.tendonMakino, to: LOC.dendenTown, desc: "도보 이동" },
@@ -426,13 +721,30 @@
                     { time: "14:45 - 15:00", title: "난바로 복귀", type: "move", transport: "walk", from: LOC.dendenTown, to: LOC.nambaStn, desc: "도보 이동" },
                     { time: "15:00 - 15:15", title: "후발대 합류", loc: LOC.nambaStn, desc: "일행 만남" },
                     { time: "15:15 - 15:30", title: "글리코상으로 이동", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.glicoMan, desc: "도보 이동" },
-                    { time: "15:30 - 16:15", title: "글리코상 구경", loc: LOC.glicoMan, desc: "도톤보리 메인 포토존" },
+                    { time: "15:30 - 16:15", title: "글리코상 & 신사이바시", loc: LOC.glicoMan, pois: [...POIS.americamura, ...POIS.shinsaibashi], desc: "글리코상, 아메리카무라, 신사이바시 구경" },
                     { time: "16:15 - 16:45", title: "간판 투어 (구로몬 이동)", type: "move", transport: "walk", from: LOC.glicoMan, to: LOC.kuromon, pois: POIS.dotonbori_views, desc: "카니도라쿠, 킨류라멘, 겐로쿠스시 등" },
                     { time: "16:45 - 17:45", title: "구로몬 시장 구경", loc: LOC.kuromon, pois: POIS.kuromon, desc: "마구로야 쿠로긴(참치), 마루젠, 가리비, 화이트 딸기" },
                     { time: "17:45 - 18:00", title: "아부리야로 이동", type: "move", transport: "walk", from: LOC.kuromon, to: LOC.aburiya, desc: "저녁 장소 이동" },
-                    { time: "18:00 - 19:30", title: "저녁: 아부리야", price: 4900, loc: LOC.aburiya, desc: "야키니쿠 식사" },
-                    { time: "19:30 - 21:00", title: "도톤보리 야경 & 간식", loc: LOC.dotonbori, desc: "야경 감상 및 주전부리" },
-                    { time: "21:00 - 22:00", title: "야식: 스미비야키토리토", loc: LOC.sumibi, desc: "꼬치구이" },
+                    { time: "18:00 - 19:30", title: "저녁: 아부리야", price: 4900, loc: LOC.aburiya, desc: "야키니쿠 식사 (예약완료)" },
+                    { time: "19:30 - 21:00", title: "도톤보리 야경 & 간식", loc: LOC.dotonbori, desc: "돈키호테 간식 구매 (내일 아침용)" },
+                    { time: "21:00 - 22:00", title: "야식: 스미비야키토리토", loc: LOC.sumibi, desc: "꼬치구이 (예약X, 상황 봐서)" },
+                    { time: "22:00 - 22:15", title: "숙소 복귀", type: "move", transport: "walk", from: LOC.sumibi, to: LOC.osakaHotel, desc: "도보 이동" },
+                    { time: "22:15 - 24:00", title: "취침", loc: LOC.osakaHotel, desc: "휴식" }
+                ],
+                items_shopping: [
+                    { time: "13:00 - 13:30", title: "난바역 도착", loc: LOC.nambaStn, desc: "후발대 오사카 도착" },
+                    { time: "13:30 - 14:00", title: "이동 및 대기", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.tendonMakino, desc: "텐동 마키노로 이동" },
+                    { time: "14:00 - 14:45", title: "점심: 텐동 마키노", price: 2400, loc: LOC.tendonMakino, desc: "식사 후 선발대 합류 대기" },
+                    { time: "14:45 - 15:00", title: "난바로 이동", type: "move", transport: "walk", from: LOC.tendonMakino, to: LOC.nambaStn, desc: "도보 이동" },
+                    { time: "15:00 - 15:15", title: "선발대 합류", loc: LOC.nambaStn, desc: "난바역 부근에서 합류" },
+                    { time: "15:15 - 15:30", title: "글리코상으로 이동", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.glicoMan, desc: "도보 이동" },
+                    { time: "15:30 - 16:15", title: "글리코상 & 신사이바시", loc: LOC.glicoMan, pois: [...POIS.americamura, ...POIS.shinsaibashi], desc: "글리코상, 아메리카무라, 신사이바시 구경" },
+                    { time: "16:15 - 16:45", title: "간판 투어 (구로몬 이동)", type: "move", transport: "walk", from: LOC.glicoMan, to: LOC.kuromon, pois: POIS.dotonbori_views, desc: "카니도라쿠, 킨류라멘, 겐로쿠스시 등" },
+                    { time: "16:45 - 17:45", title: "구로몬 시장 구경", loc: LOC.kuromon, pois: POIS.kuromon, desc: "마구로야 쿠로긴(참치), 마루젠, 가리비, 화이트 딸기" },
+                    { time: "17:45 - 18:00", title: "아부리야로 이동", type: "move", transport: "walk", from: LOC.kuromon, to: LOC.aburiya, desc: "저녁 장소 이동" },
+                    { time: "18:00 - 19:30", title: "저녁: 아부리야", price: 4900, loc: LOC.aburiya, desc: "야키니쿠 식사 (예약완료)" },
+                    { time: "19:30 - 21:00", title: "도톤보리 야경 & 간식", loc: LOC.dotonbori, desc: "돈키호테 간식 구매 (내일 아침용)" },
+                    { time: "21:00 - 22:00", title: "야식: 스미비야키토리토", loc: LOC.sumibi, desc: "꼬치구이 (예약X, 상황 봐서)" },
                     { time: "22:00 - 22:15", title: "숙소 복귀", type: "move", transport: "walk", from: LOC.sumibi, to: LOC.osakaHotel, desc: "도보 이동" },
                     { time: "22:15 - 24:00", title: "취침", loc: LOC.osakaHotel, desc: "휴식" }
                 ]
@@ -441,41 +753,41 @@
                 day: 2,
                 items: [
                     { time: "00:00 - 05:00", title: "취침", loc: LOC.osakaHotel, desc: "휴식" },
-                    { time: "05:00 - 06:00", title: "기상 및 세면", loc: LOC.osakaHotel, desc: "준비" },
+                    { time: "05:00 - 06:00", title: "기상 및 아침식사", loc: LOC.osakaHotel, desc: "준비 및 아침" },
                     { time: "06:00 - 06:15", title: "난바역으로 이동", type: "move", transport: "walk", from: LOC.osakaHotel, to: LOC.nambaStn, desc: "도보 이동" },
-                    { time: "06:15 - 07:15", title: "USJ 게이트로 이동", price: 370, type: "move", transport: "train", from: LOC.nambaStn, to: LOC.usj, desc: "전철 이동 (한신/JR)" },
-                    { time: "07:15 - 08:15", title: "오픈 대기", loc: LOC.usj, desc: "입장 대기" },
-                    { time: "08:15 - 10:30", title: "USJ 1부 (닌텐도/해리포터)", loc: LOC.usj, pois: POIS.usj, desc: "슈퍼 닌텐도 월드, 위저딩 월드 등" },
+                    { time: "06:15 - 07:15", title: "USJ 게이트로 이동", price: 370, type: "move", transport: "train", from: LOC.nambaStn, to: LOC.usj, desc: "오픈런 (한신/JR)" },
+                    { time: "07:15 - 08:15", title: "대기", loc: LOC.usj, desc: "입장 대기" },
+                    { time: "08:15 - 10:30", title: "USJ 구경 (오전)", loc: LOC.usj, pois: POIS.usj, desc: "닌텐도, 해리포터, 미니언 등" },
                     { time: "10:30 - 11:30", title: "점심식사", price: 2000, loc: LOC.usj, desc: "파크 내 식사" },
-                    { time: "11:30 - 19:30", title: "USJ 2부 (어트랙션)", loc: LOC.usj, desc: "미니언, 쥬라기, 헐리우드, 워터월드 등" },
-                    { time: "19:30 - 20:30", title: "난바로 이동", price: 370, type: "move", transport: "train", from: LOC.usj, to: LOC.nambaStn, desc: "전철 이동" },
-                    { time: "20:30 - 20:45", title: "후쿠타로 본점 이동", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.fukutaro, desc: "도보 이동" },
-                    { time: "20:45 - 22:00", title: "저녁: 후쿠타로 본점", price: 2500, loc: LOC.fukutaro, desc: "오코노미야키 (웨이팅 가능성 있음)" },
-                    { time: "22:00 - 22:15", title: "숙소로 이동", type: "move", transport: "walk", from: LOC.fukutaro, to: LOC.osakaHotel, desc: "도보 복귀" },
-                    { time: "22:15 - 24:00", title: "휴식 및 취침", loc: LOC.osakaHotel, desc: "휴식" }
+                    { time: "11:30 - 19:00", title: "USJ 구경 (오후)", loc: LOC.usj, desc: "헐리우드, 워터월드 등 어트랙션" },
+                    { time: "19:00 - 20:00", title: "난바로 이동", price: 370, type: "move", transport: "train", from: LOC.usj, to: LOC.nambaStn, desc: "전철 이동" },
+                    { time: "20:00 - 20:10", title: "식당으로 이동", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.atthe21, desc: "도보 이동" },
+                    { time: "20:00 - 21:00", title: "저녁: at the 21", price: 2500, loc: LOC.atthe21, desc: "오코노미야키/야키소바 맛집 (3.45)" },
+                    { time: "21:00 - 21:15", title: "숙소 복귀", type: "move", transport: "walk", from: LOC.atthe21, to: LOC.osakaHotel, desc: "도보 이동" },
+                    { time: "21:15 - 24:00", title: "취침", loc: LOC.osakaHotel, desc: "휴식" }
                 ]
             },
             {
                 day: 3,
                 items: [
                     { time: "00:00 - 06:00", title: "취침", loc: LOC.osakaHotel, desc: "휴식" },
-                    { time: "06:00 - 07:00", title: "기상 및 아침식사", price: 780, loc: LOC.nambaStn, desc: "신파치 식당, 하코유메 등 추천" },
-                    { time: "07:00 - 07:15", title: "난바역으로 이동", type: "move", transport: "walk", from: LOC.osakaHotel, to: LOC.nambaStn, desc: "이동" },
-                    { time: "07:15 - 08:45", title: "후시미 이나리 신사로 이동", price: 800, type: "move", transport: "train", from: LOC.nambaStn, to: LOC.fushimiInari, desc: "교토행 전철 (게이한 등)" },
-                    { time: "08:45 - 10:15", title: "후시미 이나리 신사", loc: LOC.fushimiInari, pois: POIS.fushimi, desc: "오쿠샤 봉배소, 쿠마타카샤, 요츠츠지" },
-                    { time: "10:15 - 11:30", title: "야마모토 멘조우로 이동", price: 230, type: "move", transport: "train", from: LOC.fushimiInari, to: LOC.yamamoto, desc: "전철/버스 환승 이동" },
-                    { time: "11:30 - 12:30", title: "점심: 야마모토 멘조우", price: 1200, loc: LOC.yamamoto, desc: "우동 맛집 (예약 필수)" },
-                    { time: "12:30 - 13:00", title: "기요미즈테라로 이동", price: 230, type: "move", transport: "train", from: LOC.yamamoto, to: LOC.kiyomizu, desc: "버스/도보 이동" },
-                    { time: "13:00 - 14:30", title: "기요미즈테라 (청수사)", loc: LOC.kiyomizu, pois: POIS.kiyomizu, desc: "본당 무대, 오토와 폭포" },
-                    { time: "14:30 - 15:30", title: "산넨자카 & 니넨자카", loc: LOC.sannenzaka, pois: POIS.sannenzaka, desc: "거리 투어" },
+                    { time: "06:00 - 07:30", title: "기상 및 아침식사", price: 780, loc: LOC.nambaStn, desc: "추천: 신파치 식당, 하코유메, 알프헤임, 요시노야" },
+                    { time: "07:30 - 08:45", title: "난바역으로 이동", type: "move", transport: "walk", from: LOC.osakaHotel, to: LOC.nambaStn, desc: "숙소 → 난바역" },
+                    { time: "08:45 - 09:15", title: "후시미 이나리 신사로 이동", type: "move", transport: "train", from: LOC.nambaStn, to: LOC.fushimiInari, desc: "전철 이동" },
+                    { time: "09:15 - 10:00", title: "후시미 이나리 신사 관람", loc: LOC.fushimiInari, pois: POIS.fushimi, desc: "오쿠샤 봉배소 → 곰의 숲 → 미츠츠지 → 요츠츠지 → 하산" },
+                    { time: "10:00 - 10:45", title: "야마모토 멘조우로 이동", price: 1200, type: "move", transport: "train", from: LOC.fushimiInari, to: LOC.yamamoto, desc: "전철/버스 이동" },
+                    { time: "10:45 - 12:30", title: "점심: 야마모토 멘조우", price: 1200, loc: LOC.yamamoto, desc: "우동 맛집 (10:45 예약), 예약 실패시 소바집" },
+                    { time: "12:30 - 13:00", title: "기요미즈테라로 이동", type: "move", transport: "train", from: LOC.yamamoto, to: LOC.kiyomizu, desc: "버스/도보 이동" },
+                    { time: "13:00 - 14:30", title: "기요미즈테라 관람", loc: LOC.kiyomizu, pois: POIS.kiyomizu, desc: "본당 무대와 오토와 폭포" },
+                    { time: "14:30 - 15:30", title: "산넨자카 & 니넨자카 거리 투어", loc: LOC.sannenzaka, pois: POIS.sannenzaka, desc: "거리 투어" },
                     { time: "15:30 - 16:00", title: "산조 오하시로 이동", type: "move", transport: "walk", from: LOC.sannenzaka, to: LOC.kamoRiver, desc: "도보 이동" },
-                    { time: "16:00 - 16:50", title: "가모강 휴식", loc: LOC.kamoRiver, pois: POIS.kamo_cafes, desc: "스타벅스/블루보틀 테이크아웃 후 피크닉" },
-                    { time: "16:50 - 18:00", title: "저녁1: 쿄 모츠나베 히데토라", price: 3500, loc: LOC.hideatora, desc: "모츠나베 식사" },
-                    { time: "18:00 - 19:30", title: "기온 & 폰토초 거리", loc: LOC.gion, pois: [...POIS.gion, ...POIS.pontocho], desc: "밤거리 구경" },
-                    { time: "19:30 - 20:30", title: "저녁2: 폰토쵸 야소하치", price: 3000, loc: LOC.yasohachi, desc: "이자카야" },
-                    { time: "20:30 - 22:00", title: "난바로 이동", price: 650, type: "move", transport: "train", from: LOC.yasohachi, to: LOC.nambaStn, desc: "오사카 복귀 (게이한+지하철)" },
-                    { time: "22:00 - 22:15", title: "라운드원으로 이동", type: "move", transport: "walk", from: LOC.nambaStn, to: LOC.roundOne, desc: "도보 이동" },
-                    { time: "22:15 - 24:00", title: "라운드원 or 휴식", loc: LOC.roundOne, desc: "게임 및 액티비티" }
+                    { time: "16:00 - 16:50", title: "가모강 휴식", loc: LOC.kamoRiver, pois: POIS.kamo_cafes, desc: "음료 테이크아웃 후 휴식 (스타벅스, 블루보틀 등)" },
+                    { time: "16:50 - 17:30", title: "니시키 시장 구경", loc: LOC.nishiki, pois: POIS.nishiki, desc: "시장 먹거리 구경 (계란, 두유도넛)" },
+                    { time: "17:30 - 18:30", title: "저녁1: 쿄 모츠나베 카메하치 본점", price: 3500, loc: LOC.kamehachi, pois: POIS.kamehachi, desc: "교토 최고의 모츠나베 (폰토초)" },
+                    { time: "18:30 - 19:30", title: "밤의 기온시조 및 폰토초 구경", loc: LOC.gion, pois: [...POIS.gion, ...POIS.pontocho], desc: "하나미코지, 야사카신사, 폰토초" },
+                    { time: "19:30 - 20:30", title: "저녁2: Bingo", price: 3000, loc: LOC.bingo, desc: "인스타 DM 예약 (민성)" },
+                    { time: "20:30 - 22:00", title: "난바로 이동", type: "move", transport: "train", from: LOC.bingo, to: LOC.nambaStn, desc: "오사카 복귀" },
+                    { time: "22:00 - 24:00", title: "라운드원 방문 or 휴식", loc: LOC.roundOne, desc: "게임 및 액티비티" }
                 ]
             },
             {
@@ -485,36 +797,24 @@
                     { time: "01:00 - 09:00", title: "취침", loc: LOC.osakaHotel, desc: "마지막 밤" },
                     { time: "09:00 - 10:20", title: "기상 및 아침(코메다)", loc: LOC.nambaStn, desc: "코메다 커피 등" },
                     { time: "10:20 - 10:46", title: "신오사카 역으로 이동", price: 290, type: "move", transport: "train", from: LOC.nambaStn, to: LOC.shinOsaka, desc: "지하철 이동 (미도스지선)" },
-                    { time: "10:46 - 11:06", title: "에키벤 구매", loc: LOC.shinOsaka, desc: "각자 취향대로 구매" },
+                    { time: "10:46 - 11:06", title: "에키벤 구매", loc: LOC.shinOsaka, pois: POIS.shin_osaka_ekiben, desc: "니기와이, 551호라이, 다루마 등" },
                     { time: "11:06 - 13:33", title: "도쿄행 신칸센 이동", price: 14720, type: "move", transport: "train", from: LOC.shinOsaka, to: LOC.tokyoStn, desc: "기차 내 에키벤 식사" },
-                    { time: "13:33 - 14:00", title: "도쿄역 → 숙소 이동", price: 170, type: "move", transport: "train", from: LOC.tokyoStn, to: LOC.uenoHotel, desc: "우에노(네기시) 이동" },
+                    { time: "13:33 - 14:00", title: "도쿄역 → 숙소 이동", price: 170, type: "move", transport: "train", from: LOC.tokyoStn, to: LOC.uenoHotel, pois: POIS.ueno_hotel_nearby, desc: "우에노(네기시) 이동 및 숙소 주변 확인" },
                     { time: "14:00 - 14:20", title: "도구거리 이동", type: "move", transport: "walk", from: LOC.uenoHotel, to: LOC.kappabashi, desc: "도보" },
                     { time: "14:20 - 15:20", title: "갓파바시 도구거리", loc: LOC.kappabashi, pois: POIS.kappabashi, desc: "니이미, 마지마야, 유니온 등 관람" },
                     { time: "15:20 - 15:40", title: "센소지로 이동", type: "move", transport: "walk", from: LOC.kappabashi, to: LOC.sensoji, desc: "도보" },
                     { time: "15:40 - 17:00", title: "센소지 & 나카미세도리", loc: LOC.sensoji, pois: POIS.sensoji, desc: "카미나리몬, 밀레 메레(애플파이), 멘치카츠 등" },
                     { time: "17:00 - 17:30", title: "아키하바라로 이동", price: 210, type: "move", transport: "train", from: LOC.sensoji, to: LOC.akihabara, desc: "츠쿠바 익스프레스 등" },
-                    { time: "17:30 - 18:30", title: "아키하바라 구경", loc: LOC.akihabara, pois: POIS.akihabara, desc: "라디오회관, 애니메이트 등" },
-                    { 
-                        time: "18:30 - 19:30", 
-                        title: "저녁: 라멘 (팀 분리)", 
-                        type: "split_dinner",
-                        routes: [
-                            { name: "A팀: 멘도코로 혼다", to: LOC.honda, color: "#ef4444", desc: "쇼유 라멘" },
-                            { name: "B팀: 호타테 비요리", to: LOC.hotate, color: "#22c55e", desc: "가리비 라멘" }
-                        ],
+                    { time: "17:30 - 19:00", title: "아키하바라 구경", loc: LOC.akihabara, pois: POIS.akihabara, desc: "라디오회관, 애니메이트 등 (시간 확대)" },
+                    {
+                        time: "19:00 - 20:30",
+                        title: "저녁: 멘도코로 혼다",
+                        loc: LOC.honda_akiba,
+                        pois: POIS.honda_akiba,
                         price: 1300,
-                        desc: "각자 웨이팅 후 식사"
+                        desc: "아키하바라 쇼유 라멘 맛집 (웨이팅 필수)"
                     },
-                    { 
-                        time: "19:30 - 20:30", 
-                        title: "GIGO 게임 & 가챠", 
-                        loc: LOC.gigo,
-                        type: "merge", 
-                        froms: [LOC.honda, LOC.hotate], 
-                        desc: "다시 합류하여 게임",
-                        price: 2000
-                    },
-                    { time: "20:30 - 21:00", title: "아메요코로 이동", type: "move", transport: "walk", from: LOC.gigo, to: LOC.ameyoko, desc: "도보" },
+                    { time: "20:30 - 21:00", title: "아메요코로 이동", type: "move", transport: "walk", from: LOC.honda_akiba, to: LOC.ameyoko, desc: "도보" },
                     { time: "21:00 - 24:00", title: "이자카야 뒷풀이", loc: LOC.ameyoko, pois: POIS.ameyoko, desc: "매장 찾아야 함" }
                 ]
             },
@@ -528,32 +828,26 @@
             {
                 day: 6,
                 items: [
-                    { time: "00:00 - 08:00", title: "취침 및 기상 준비", loc: LOC.uenoHotel, desc: "컨디션 조절 필수" },
-                    { 
-                        time: "08:00 - 08:15", 
-                        title: "팀 분리 및 출발", 
-                        type: "split_dinner", 
-                        routes: [
-                            { name: "어트랙션(5명): 출발", to: LOC.iriyaStn, color: "#ef4444", desc: "이리야역으로 도보 이동" },
-                            { name: "쇼핑(3명): 휴식/자유", to: LOC.uenoHotel, color: "#a855f7", desc: "숙소 잔류 및 자유일정" }
-                        ],
-                        desc: "어트랙션 팟은 이리야역으로, 쇼핑팟은 자유" 
-                    },
-                    { time: "08:15 - 08:50", title: "이동: 이리야역 → 가미야초역", price: 210, type: "move", transport: "train", from: LOC.iriyaStn, to: LOC.kamiyachoStn, desc: "히비야선 탑승, 환승 없음 (약 26분)" },
-                    { time: "08:50 - 09:40", title: "오전: 조조지 & 도쿄 타워 뷰", loc: LOC.zojoji, pois: POIS.zojoji_view, desc: "도쿄타워 배경 인생샷 촬영 (시간 조정됨)" },
-                    { time: "09:40 - 10:00", title: "이동: 조조지 → 팀랩(아자부다이)", type: "move", transport: "walk", from: LOC.zojoji, to: LOC.azabudai, desc: "도보 이동 (약 15분), 예약 시간 준수!" },
-                    { time: "10:00 - 12:30", title: "메인 1: 팀랩 보더리스", price: 3800, loc: LOC.azabudai, desc: "아자부다이 힐스, [10:00 예약 필수]" },
-                    { time: "12:30 - 14:00", title: "점심: 아자부다이 힐스", price: 2500, loc: LOC.azabudai, pois: POIS.azabudai_shops, desc: "돈카츠 카와무라, 피자바, %아라비카, 하브스 등" },
-                    { time: "14:00 - 14:30", title: "이동: 가미야초역 → 시부야역", price: 210, type: "move", transport: "train", from: LOC.kamiyachoStn, to: LOC.shibuyaStn, desc: "히비야선(에비스 환승) → JR 야마노테선" },
-                    { time: "14:30 - 16:10", title: "시부야 파르코 & 미야시타", loc: LOC.parco, pois: POIS.shibuya_attract, desc: "닌텐도, 점프샵, 포켓몬, 휴먼메이드 등 쇼핑" },
-                    { time: "16:10 - 16:20", title: "이동: 미야시타 → 시부야 스카이", type: "move", transport: "walk", from: LOC.miyashita, to: LOC.shibuyaSky, desc: "스크램블 스퀘어로 이동 (14층 입구)" },
-                    { time: "16:20 - 17:40", title: "일행 합류: 시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "[쇼핑팟 합류] 전망대 관람 및 일몰 감상" },
-                    { time: "17:40 - 18:00", title: "이동: 시부야역 → 신주쿠역", price: 170, type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.shinjukuStn, desc: "JR 야마노테선 (7분 소요)" },
-                    { time: "18:00 - 19:10", title: "저녁: 규카츠 모토무라 본점", price: 2600, loc: LOC.motomura, desc: "화로구이 규카츠 (대기 길면 네기시 변경 고려)" },
-                    { time: "19:10 - 19:30", title: "이동: 식당 → 미스터리 서커스", type: "move", transport: "walk", from: LOC.motomura, to: LOC.mysteryCircus, desc: "도보 2~3분, 화장실 이용" },
-                    { time: "19:30 - 21:40", title: "메인 3: 도쿄 미스터리 서커스", price: 3500, loc: LOC.mysteryCircus, desc: "[방탈출 게임] 예약 게임 몰입 (21:30 종료)" },
-                    { time: "21:40 - 23:30", title: "심야: 쇼핑팟 재합류 & 가부키초", loc: LOC.kabukicho, pois: POIS.shinjuku_night, desc: "이자카야, 노래방, 코파볼 등 불태우기" },
-                    { time: "23:30 - 24:00", title: "숙소 복귀 (막차 주의)", price: 210, type: "move", transport: "train", from: LOC.shinjukuStn, to: LOC.uguisudani, desc: "JR 야마노테선 (약 25분)" }
+                    { time: "00:00 - 08:00", title: "취침 및 기상", loc: LOC.uenoHotel, desc: "기상 및 준비" },
+                    { time: "08:00 - 08:30", title: "우에노역으로 이동", type: "move", transport: "walk", from: LOC.uenoHotel, to: LOC.uenoHotel, desc: "우에노역 이동" },
+                    { time: "08:30 - 09:30", title: "가마쿠라로 이동", price: 940, type: "move", transport: "train", from: LOC.uenoHotel, to: LOC.kamakuraStn, desc: "JR 우에노 도쿄라인 (약 55분)" },
+                    { time: "09:30 - 10:30", title: "쓰루가오카 하치만구", loc: LOC.tsurugaoka, desc: "신사 구경 및 산책" },
+                    { time: "10:30 - 11:00", title: "고마치도리 간식", loc: LOC.komachi, pois: POIS.komachi, desc: "Giraffa (카레빵), 마메야 등" },
+                    { time: "11:00 - 12:00", title: "점심: 아키모토", price: 2000, loc: LOC.akimoto, desc: "시라스동(잔멸치덮밥) 맛집" },
+                    { time: "12:00 - 12:20", title: "하세역으로 이동", price: 200, type: "move", transport: "train", from: LOC.kamakuraStn, to: LOC.haseStn, desc: "에노덴 탑승" },
+                    { time: "12:20 - 13:00", title: "고토쿠인 (대불상)", loc: LOC.daibutsu, desc: "가마쿠라 대불 관람" },
+                    { time: "13:00 - 13:20", title: "가마쿠라코코마에 이동", price: 200, type: "move", transport: "train", from: LOC.haseStn, to: LOC.kamakurakoko, desc: "에노덴 탑승" },
+                    { time: "13:20 - 13:45", title: "슬램덩크 건널목", loc: LOC.kamakurakoko, desc: "사진 촬영 (인파 주의)" },
+                    { time: "13:45 - 14:20", title: "에노시마로 도보 이동", type: "move", transport: "walk", from: LOC.kamakurakoko, to: LOC.enoshimaIsland, desc: "해변 따라 걷기 (약 35분)" },
+                    { time: "14:20 - 16:30", title: "에노시마 섬 관광", loc: LOC.enoshimaIsland, pois: POIS.enoshima, desc: "신사, 동굴, 거리 구경" },
+                    { time: "16:30 - 17:30", title: "에노시마 씨캔들", loc: LOC.seaCandle, desc: "전망대 일몰 감상 (Jewel of Shonan)" },
+                    { time: "17:30 - 17:45", title: "저녁 식당 이동", type: "move", transport: "walk", from: LOC.seaCandle, to: LOC.tonkatsusaito, desc: "카타세에노시마역 인근으로 이동" },
+                    { time: "17:45 - 18:45", title: "저녁: 돈카츠 (에노시마)", price: 2000, loc: LOC.tonkatsusaito, desc: "Tonkatsu Saito or similar nearby" },
+                    { time: "18:45 - 20:15", title: "시부야로 이동", price: 650, type: "move", transport: "train", from: LOC.kataseEnoshima, to: LOC.shibuyaStn, desc: "오다큐/JR 이동 (약 1시간 30분)" },
+                    { time: "20:15 - 20:30", title: "시부야 스카이 이동", type: "move", transport: "walk", from: LOC.shibuyaStn, to: LOC.shibuyaSky, desc: "스크램블 스퀘어" },
+                    { time: "20:30 - 21:30", title: "시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "야경 감상 (쇼핑팀 합류)" },
+                    { time: "21:30 - 22:30", title: "늦은 식사/뒷풀이", price: 3000, loc: LOC.motomura, desc: "규카츠 모토무라 or 모헤지 몬자야키" },
+                    { time: "22:30 - 23:00", title: "숙소 복귀", type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.uguisudani, desc: "JR 야마노테선" }
                 ],
                 items_shopping: [
                     { time: "00:00 - 09:00", title: "취침 및 늦잠", loc: LOC.uenoHotel, desc: "여유롭게 기상" },
@@ -594,20 +888,38 @@
                     { time: "10:00 - 22:00", title: "도쿄 시내 자유 여행", loc: LOC.tokyoStn, desc: "도쿄역, 긴자, 롯폰기 등 자유 일정 (상세 없음)" },
                     { time: "22:00 - 24:00", title: "숙소 복귀 및 휴식", loc: LOC.uenoHotel, desc: "오타쿠 팟과 합류" }
                 ]
+            },
+            {
+                day: 8,
+                items: [
+                    { time: "00:00 - 08:30", title: "기상 및 체크아웃", loc: LOC.uenoHotel, desc: "짐 챙겨서 출발" },
+                    { time: "08:30 - 09:00", title: "우에노역으로 이동", type: "move", transport: "walk", from: LOC.uenoHotel, to: LOC.uenoHotel, desc: "우에노역 이동" },
+                    { time: "09:00 - 09:30", title: "도쿄역으로 이동", price: 170, type: "move", transport: "train", from: LOC.uenoHotel, to: LOC.tokyoStn, desc: "JR 야마노테선/게이힌토호쿠선" },
+                    { time: "09:30 - 09:45", title: "코인로커 짐 보관", loc: LOC.tokyoStn, desc: "도쿄역 내 보관함" },
+                    { time: "09:45 - 11:30", title: "도쿄역 구경", loc: LOC.tokyoStn, pois: POIS.tokyo_char, desc: "캐릭터 스트리트, 라멘 스트리트 등" },
+                    { time: "11:30 - 11:45", title: "긴자로 이동", type: "move", transport: "walk", from: LOC.tokyoStn, to: LOC.ginza, desc: "도보 이동 (약 15분)" },
+                    { time: "11:45 - 13:00", title: "점심: 긴자 바이린 (돈카츠)", price: 3000, loc: LOC.ginzaBairin, desc: "긴자 3대 돈카츠 맛집" },
+                    { time: "13:00 - 14:30", title: "긴자 쇼핑", loc: LOC.ginza, pois: POIS.ginza_shop, desc: "유니클로 12층, 이토야, 미츠코시 등" },
+                    { time: "14:30 - 14:45", title: "도쿄역으로 복귀", type: "move", transport: "walk", from: LOC.ginza, to: LOC.tokyoStn, desc: "도보 이동" },
+                    { time: "14:45 - 15:00", title: "짐 찾기 및 승강장 이동", loc: LOC.tokyoStn, desc: "나리타 익스프레스 승강장 확인" },
+                    { time: "15:00 - 16:00", title: "공항으로 이동 (N'EX)", price: 3070, type: "move", transport: "train", from: LOC.tokyoStn, to: LOC.narita, desc: "나리타 익스프레스 탑승" },
+                    { time: "16:00 - 19:00", title: "출국 수속 및 면세점", loc: LOC.narita, desc: "티켓 발권, 짐 부치기, 식사 등" },
+                    { time: "19:00 - 21:30", title: "인천공항으로 비행", loc: LOC.narita, desc: "한국으로 귀국" }
+                ]
             }
         ];
 
         // --- 2. LOGIC ---
         function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
+            const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
 
         const SCHEDULE = RAW_DATA;
-        
+
         let selectedIndices = new Set();
         let longPressTimer;
         let isLongPressTriggered = false;
@@ -627,15 +939,15 @@
             end: L.divIcon({ html: '<div class="bg-slate-700 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg border-2 border-white">E</div>', className: 'bg-transparent', iconSize: [32, 32], iconAnchor: [16, 32] }),
             poi: L.divIcon({ className: 'pulse-icon' }),
             poiBlue: L.divIcon({ className: 'pulse-icon-blue' }),
-            splitA: L.divIcon({ html: '<div class="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white">A</div>', className: 'bg-transparent', iconSize: [24,24] }),
-            splitB: L.divIcon({ html: '<div class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white">B</div>', className: 'bg-transparent', iconSize: [24,24] }),
-            splitShop: L.divIcon({ html: '<div class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white"><i class="fas fa-shopping-bag"></i></div>', className: 'bg-transparent', iconSize: [24,24] })
+            splitA: L.divIcon({ html: '<div class="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white">A</div>', className: 'bg-transparent', iconSize: [24, 24] }),
+            splitB: L.divIcon({ html: '<div class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white">B</div>', className: 'bg-transparent', iconSize: [24, 24] }),
+            splitShop: L.divIcon({ html: '<div class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border-2 border-white"><i class="fas fa-shopping-bag"></i></div>', className: 'bg-transparent', iconSize: [24, 24] })
         };
 
         function getNumberIcon(num) {
-            return L.divIcon({ 
-                html: `<div class="number-icon">${num}</div>`, 
-                className: 'bg-transparent', 
+            return L.divIcon({
+                html: `<div class="number-icon">${num}</div>`,
+                className: 'bg-transparent',
                 iconSize: [24, 24],
                 iconAnchor: [12, 12]
             });
@@ -643,23 +955,23 @@
 
         async function drawRoute(from, to, color = '#3b82f6', dashed = false) {
             const options = { color: color, weight: 5, opacity: 0.8, lineJoin: 'round' };
-            if(dashed) options.dashArray = '1, 10';
+            if (dashed) options.dashArray = '1, 10';
             const line = L.polyline([from, to], dashed ? { ...options, dashArray: '8, 8', weight: 4, color: '#cbd5e1' } : options).addTo(map);
-            if(dashed) { layers.push(line); return; }
+            if (dashed) { layers.push(line); return; }
             layers.push(line);
             try {
                 const dist = getDistance(from[0], from[1], to[0], to[1]);
                 if (dist > 100) { map.fitBounds(line.getBounds(), { padding: [50, 50] }); return; }
                 const resp = await fetch(`https://router.project-osrm.org/route/v1/foot/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson`);
                 const data = await resp.json();
-                if(data.code === 'Ok') {
+                if (data.code === 'Ok') {
                     const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
                     map.removeLayer(line);
                     const route = L.polyline(coords, options).addTo(map);
                     layers.push(route);
                     map.fitBounds(route.getBounds(), { padding: [50, 50] });
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
 
         // --- 4. SELECTION & MAP UPDATE ---
@@ -669,11 +981,11 @@
             document.getElementById('btn-reset-select').classList.add('hidden');
             document.getElementById('map-info').classList.add('hidden');
             layers.forEach(l => map.removeLayer(l)); layers = [];
-            
+
             let dayData = SCHEDULE[currentDay];
-            let items = ( (currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
+            let items = ((currentDay === 0 || currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
             const first = items.find(i => i.loc || i.from);
-            if(first) map.setView(first.loc || first.from, 13);
+            if (first) map.setView(first.loc || first.from, 13);
         }
 
         function updateMultiSelectMap() {
@@ -681,9 +993,9 @@
             document.getElementById('map-info').classList.add('hidden');
 
             let dayData = SCHEDULE[currentDay];
-            let items = ( (currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
-            const indices = Array.from(selectedIndices).sort((a,b) => a-b);
-            
+            let items = ((currentDay === 0 || currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
+            const indices = Array.from(selectedIndices).sort((a, b) => a - b);
+
             if (indices.length === 0) return;
 
             const routePoints = [];
@@ -707,7 +1019,7 @@
 
         function handleItemClick(index, card) {
             let dayData = SCHEDULE[currentDay];
-            let items = ( (currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
+            let items = ((currentDay === 0 || currentDay === 5 || currentDay === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
             const item = items[index];
 
             if (selectedIndices.size > 0 || isLongPressTriggered) {
@@ -729,21 +1041,21 @@
 
             document.querySelectorAll('.schedule-item').forEach(e => e.classList.remove('active-card', 'multi-selected'));
             card.classList.add('active-card');
-            
+
             layers.forEach(l => map.removeLayer(l)); layers = [];
-            
+
             const infoBox = document.getElementById('map-info');
             const infoContent = document.getElementById('info-content');
             const toggleIcon = document.getElementById('toggle-icon');
-            
+
             infoBox.classList.remove('hidden', 'opacity-0', 'translate-y-[-20px]');
             infoContent.classList.add('collapsed-content');
             toggleIcon.classList.add('rotate-180');
 
             document.getElementById('info-title').innerText = item.title;
-            
+
             let infoHtml = `<p class="mb-2">${item.desc || ''}</p>`;
-            if(item.time) infoHtml += `<p class="text-xs text-gray-400 mb-2"><i class="far fa-clock"></i> ${item.time}</p>`;
+            if (item.time) infoHtml += `<p class="text-xs text-gray-400 mb-2"><i class="far fa-clock"></i> ${item.time}</p>`;
 
             const isMove = item.type === 'move';
             const isSplit = item.type === 'split_dinner';
@@ -751,36 +1063,36 @@
             if (isSplit) {
                 const start = item.day === 6 ? LOC.uenoHotel : LOC.akihabara;
                 item.routes.forEach(r => {
-                    if(!r.name.includes('쇼핑')) { 
+                    if (!r.name.includes('쇼핑')) {
                         drawRoute(start, r.to, r.color);
                     }
                     let iconType = icons.splitA;
-                    if(r.name.includes('B') || r.name.includes('호타테')) iconType = icons.splitB;
-                    if(r.name.includes('쇼핑')) iconType = icons.splitShop;
-                    layers.push(L.marker(r.to, {icon: iconType}).addTo(map).bindPopup(r.name));
+                    if (r.name.includes('B') || r.name.includes('호타테')) iconType = icons.splitB;
+                    if (r.name.includes('쇼핑')) iconType = icons.splitShop;
+                    layers.push(L.marker(r.to, { icon: iconType }).addTo(map).bindPopup(r.name));
                 });
-                layers.push(L.marker(start, {icon: icons.start}).addTo(map));
+                layers.push(L.marker(start, { icon: icons.start }).addTo(map));
             } else if (item.type === 'merge') {
                 item.froms.forEach((f, idx) => {
-                    drawRoute(f, item.loc, idx===0?'#ef4444':'#22c55e');
-                    layers.push(L.marker(f, {icon: idx===0?icons.splitA:icons.splitB}).addTo(map));
+                    drawRoute(f, item.loc, idx === 0 ? '#ef4444' : '#22c55e');
+                    layers.push(L.marker(f, { icon: idx === 0 ? icons.splitA : icons.splitB }).addTo(map));
                 });
-                layers.push(L.marker(item.loc, {icon: icons.end}).addTo(map).bindPopup("GIGO 집결"));
+                layers.push(L.marker(item.loc, { icon: icons.end }).addTo(map).bindPopup("GIGO 집결"));
             } else if (isMove) {
-                drawRoute(item.from, item.to, item.transport==='train'?'#8b5cf6':'#3b82f6');
-                layers.push(L.marker(item.from, {icon: icons.start}).addTo(map));
-                layers.push(L.marker(item.to, {icon: icons.end}).addTo(map));
+                drawRoute(item.from, item.to, item.transport === 'train' ? '#8b5cf6' : '#3b82f6');
+                layers.push(L.marker(item.from, { icon: icons.start }).addTo(map));
+                layers.push(L.marker(item.to, { icon: icons.end }).addTo(map));
             } else {
-                if(item.loc) {
+                if (item.loc) {
                     map.setView(item.loc, 15);
-                    layers.push(L.marker(item.loc, {icon: icons.start}).addTo(map));
+                    layers.push(L.marker(item.loc, { icon: icons.start }).addTo(map));
                 }
-                if(item.pois) {
+                if (item.pois) {
                     const bounds = L.latLngBounds(item.pois.map(p => p.pos));
                     item.pois.forEach(p => {
-                        layers.push(L.marker(p.pos, {icon: icons.poi}).addTo(map).bindTooltip(p.name, {permanent:true, direction:'top', className:'text-xs font-bold bg-white border px-1 rounded shadow'}));
+                        layers.push(L.marker(p.pos, { icon: icons.poi }).addTo(map).bindTooltip(p.name, { permanent: true, direction: 'top', className: 'text-xs font-bold bg-white border px-1 rounded shadow' }));
                     });
-                    map.fitBounds(bounds, {padding:[50,50]});
+                    map.fitBounds(bounds, { padding: [50, 50] });
                     infoHtml += `<div class="grid grid-cols-2 gap-1 mt-2">`;
                     item.pois.forEach(p => infoHtml += `<span class="text-xs bg-gray-50 px-2 py-1 rounded border">📍 ${p.name}</span>`);
                     infoHtml += `</div>`;
@@ -795,7 +1107,7 @@
         function toggleInfo() {
             const content = document.getElementById('info-content');
             const icon = document.getElementById('toggle-icon');
-            if(content.classList.contains('collapsed-content')) {
+            if (content.classList.contains('collapsed-content')) {
                 content.classList.remove('collapsed-content');
                 icon.classList.remove('rotate-180');
             } else {
@@ -810,29 +1122,29 @@
 
         function selectTeam(team) {
             currentTeam = team;
-            
+
             const btnAtt = document.getElementById('btn-team-attraction');
             const btnShop = document.getElementById('btn-team-shopping');
-            
-            if(team === 'attraction') {
+
+            if (team === 'attraction') {
                 btnAtt.className = 'team-toggle team-active px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm';
                 btnShop.className = 'team-toggle team-inactive px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm';
             } else {
                 btnAtt.className = 'team-toggle team-inactive px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm';
                 btnShop.className = 'team-toggle team-active px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm';
             }
-            
-            renderTimeline(currentDay); 
-            
+
+            renderTimeline(currentDay);
+
             const dayData = SCHEDULE[currentDay];
             const items = (team === 'shopping') ? dayData.items_shopping : dayData.items;
             const first = items.find(i => i.loc || i.from);
-            if(first) map.setView(first.loc || first.from, 13);
+            if (first) map.setView(first.loc || first.from, 13);
         }
 
         function renderTimeline(dayIdx) {
             currentDay = dayIdx;
-            clearSelection(); 
+            clearSelection();
 
             const list = document.getElementById('schedule-list');
             const dayData = SCHEDULE[dayIdx];
@@ -840,12 +1152,16 @@
             const teamSelector = document.getElementById('team-selector');
             const btnAtt = document.getElementById('btn-team-attraction');
             const btnShop = document.getElementById('btn-team-shopping');
-            
+
             list.innerHTML = '';
-            
-            if (dayIdx === 5) { // 6일차
+
+            if (dayIdx === 0) { // 1일차
                 teamSelector.classList.remove('hidden');
-                btnAtt.innerHTML = "🎢 어트랙션 팟 (5명)";
+                btnAtt.innerHTML = "🏃 선발대 (Advance)";
+                btnShop.innerHTML = "🐢 후발대 (Rear)";
+            } else if (dayIdx === 5) { // 6일차
+                teamSelector.classList.remove('hidden');
+                btnAtt.innerHTML = "🚃 근교 팟 (5명)";
                 btnShop.innerHTML = "🛍️ 쇼핑 팟 (3명)";
             } else if (dayIdx === 6) { // 7일차
                 teamSelector.classList.remove('hidden');
@@ -855,28 +1171,28 @@
                 teamSelector.classList.add('hidden');
             }
 
-            if (dayIdx === 3) { 
+            if (dayIdx === 3) {
                 legend.classList.remove('hidden');
                 legend.innerHTML = `
                     <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>A팀: 멘도코로 혼다</span></div>
                     <div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full"></span> <span>B팀: 호타테 비요리</span></div>
                 `;
-            } else if (dayIdx === 5 && currentTeam === 'attraction') { 
+            } else if (dayIdx === 5 && currentTeam === 'attraction') {
                 legend.classList.remove('hidden');
                 legend.innerHTML = `
-                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>🎢 어트랙션 (5명)</span></div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>🚃 근교 (5명)</span></div>
                     <div class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-500 rounded-full"></span> <span>🛍️ 쇼핑 (3명)</span></div>
                 `;
             } else {
                 legend.classList.add('hidden');
             }
-            
+
             let items = dayData.items;
-            if ((dayIdx === 5 || dayIdx === 6) && currentTeam === 'shopping') {
+            if ((dayIdx === 0 || dayIdx === 5 || dayIdx === 6) && currentTeam === 'shopping') {
                 items = dayData.items_shopping;
             }
 
-            let total = 0; items.forEach(i => total += (i.price||0));
+            let total = 0; items.forEach(i => total += (i.price || 0));
             document.getElementById('total-cost-desktop').innerText = `총 예상 비용: ${formatMoney(total)}`;
             document.getElementById('total-cost-mobile').innerText = `Total: ${formatMoney(total)}`;
 
@@ -885,31 +1201,31 @@
             items.forEach((item, index) => {
                 const isMove = item.type === 'move';
                 const isSplit = item.type === 'split_dinner';
-                
+
                 const card = document.createElement('div');
                 card.className = `schedule-item p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 cursor-pointer relative bg-white my-2 select-none ${isMove ? 'bg-slate-50 border-dashed opacity-80' : ''}`;
-                
+
                 let iconEl = `<div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center"><i class="fas fa-map-pin"></i></div>`;
-                if(item.title.includes('기상') || item.title.includes('취침')) iconEl = `<div class="w-10 h-10 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center"><i class="fas fa-bed"></i></div>`;
-                else if(isMove) iconEl = `<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-${item.transport === 'train' ? 'train' : 'person-walking'}"></i></div>`;
-                else if(item.title.includes('식사') || item.title.includes('저녁') || item.title.includes('점심')) iconEl = `<div class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center"><i class="fas fa-utensils"></i></div>`;
-                else if(isSplit) iconEl = `<div class="w-10 h-10 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center"><i class="fas fa-code-branch"></i></div>`;
+                if (item.title.includes('기상') || item.title.includes('취침')) iconEl = `<div class="w-10 h-10 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center"><i class="fas fa-bed"></i></div>`;
+                else if (isMove) iconEl = `<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-${item.transport === 'train' ? 'train' : 'person-walking'}"></i></div>`;
+                else if (item.title.includes('식사') || item.title.includes('저녁') || item.title.includes('점심')) iconEl = `<div class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center"><i class="fas fa-utensils"></i></div>`;
+                else if (isSplit) iconEl = `<div class="w-10 h-10 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center"><i class="fas fa-code-branch"></i></div>`;
 
                 let timeStr = item.time ? item.time.replace(' - ', '<br>~<br>') : '';
-                
+
                 let content = `<div class="flex items-center gap-3">`;
                 content += `<div class="flex flex-col items-center gap-1 min-w-[50px] leading-tight text-center"><span class="text-[10px] font-bold text-gray-500">${timeStr}</span>${iconEl}</div>`;
                 content += `<div class="flex-1 min-w-0"><div class="flex justify-between items-start"><h4 class="font-bold text-gray-800 truncate ${isMove ? 'text-sm text-gray-500' : ''}">${item.title}</h4>`;
-                if(item.price) content += `<span class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold ml-1 shrink-0">${formatMoney(item.price)}</span>`;
+                if (item.price) content += `<span class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-bold ml-1 shrink-0">${formatMoney(item.price)}</span>`;
                 content += `</div>`;
-                
-                if(item.desc) content += `<p class="text-xs text-gray-500 mt-1 truncate">${item.desc}</p>`;
-                if(isMove && item.dist) content += `<p class="text-[10px] text-blue-500 font-semibold mt-0.5"><i class="fas fa-route"></i> ${item.dist}km 이동</p>`;
-                
-                if(isSplit) {
-                    if (currentDay === 5) { 
-                         content += `<div class="flex gap-2 mt-2"><span class="text-[10px] px-2 py-1 rounded border split-badge-a flex-1 text-center">🎢 어트랙션 (5명)</span><span class="text-[10px] px-2 py-1 rounded border split-badge-shop flex-1 text-center">🛍️ 쇼핑 (3명)</span></div>`;
-                    } else { 
+
+                if (item.desc) content += `<p class="text-xs text-gray-500 mt-1 truncate">${item.desc}</p>`;
+                if (isMove && item.dist) content += `<p class="text-[10px] text-blue-500 font-semibold mt-0.5"><i class="fas fa-route"></i> ${item.dist}km 이동</p>`;
+
+                if (isSplit) {
+                    if (currentDay === 5) {
+                        content += `<div class="flex gap-2 mt-2"><span class="text-[10px] px-2 py-1 rounded border split-badge-a flex-1 text-center">🚃 근교 (5명)</span><span class="text-[10px] px-2 py-1 rounded border split-badge-shop flex-1 text-center">🛍️ 쇼핑 (3명)</span></div>`;
+                    } else {
                         content += `<div class="flex gap-2 mt-2"><span class="text-[10px] px-2 py-1 rounded border split-badge-a flex-1 text-center">A: 혼다</span><span class="text-[10px] px-2 py-1 rounded border split-badge-b flex-1 text-center">B: 호타테</span></div>`;
                     }
                 }
@@ -921,22 +1237,22 @@
                     longPressTimer = setTimeout(() => {
                         isLongPressTriggered = true;
                         if (navigator.vibrate) navigator.vibrate(50);
-                        handleItemClick(index, card); 
-                    }, 500); 
+                        handleItemClick(index, card);
+                    }, 500);
                 };
                 const clearEvent = () => { clearTimeout(longPressTimer); };
 
                 card.addEventListener('mousedown', startEvent);
                 card.addEventListener('mouseup', clearEvent);
                 card.addEventListener('mouseleave', clearEvent);
-                card.addEventListener('touchstart', startEvent, {passive: true});
+                card.addEventListener('touchstart', startEvent, { passive: true });
                 card.addEventListener('touchend', clearEvent);
-                card.addEventListener('touchmove', clearEvent); 
+                card.addEventListener('touchmove', clearEvent);
                 card.onclick = (e) => {
                     if (!isLongPressTriggered) {
                         handleItemClick(index, card);
                     }
-                    isLongPressTriggered = false; 
+                    isLongPressTriggered = false;
                 };
 
                 list.appendChild(card);
@@ -944,31 +1260,31 @@
         }
 
         function selectDay(idx) {
-            currentDay = idx; 
+            currentDay = idx;
 
-            [0,1,2,3,4,5,6].forEach(i => {
+            [0, 1, 2, 3, 4, 5, 6, 7].forEach(i => {
                 const btn = document.getElementById(`tab-${i}`);
-                if(!btn) return; 
+                if (!btn) return;
 
-                if(i===idx) { btn.classList.add('text-indigo-600','border-indigo-600'); btn.classList.remove('text-gray-500'); }
-                else { btn.classList.remove('text-indigo-600','border-indigo-600'); btn.classList.add('text-gray-500'); }
+                if (i === idx) { btn.classList.add('text-indigo-600', 'border-indigo-600'); btn.classList.remove('text-gray-500'); }
+                else { btn.classList.remove('text-indigo-600', 'border-indigo-600'); btn.classList.add('text-gray-500'); }
             });
-            
+
             // 날짜 변경 시 기본 팀은 어트랙션(첫번째)으로 초기화
-            if(idx === 5 || idx === 6) selectTeam('attraction');
+            if (idx === 0 || idx === 5 || idx === 6) selectTeam('attraction');
             else renderTimeline(idx);
-            
+
             const dayData = SCHEDULE[idx];
-            const items = ( (idx === 5 || idx === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
+            const items = ((idx === 0 || idx === 5 || idx === 6) && currentTeam === 'shopping') ? dayData.items_shopping : dayData.items;
             const first = items.find(i => i.loc || i.from);
-            if(first) map.setView(first.loc || first.from, 13);
+            if (first) map.setView(first.loc || first.from, 13);
         }
 
         function initResizer() {
             const resizer = document.getElementById('resizer');
             const sidebar = document.getElementById('sidebar-panel');
             const mapContainer = document.getElementById('map-container');
-            
+
             let isResizing = false;
 
             resizer.addEventListener('mousedown', (e) => { isResizing = true; e.preventDefault(); });
@@ -976,26 +1292,26 @@
 
             window.addEventListener('mousemove', (e) => {
                 if (!isResizing) return;
-                
+
                 if (window.innerWidth >= 768) {
                     const percentage = (e.clientX / window.innerWidth) * 100;
-                    if (percentage > 20 && percentage < 80) { 
+                    if (percentage > 20 && percentage < 80) {
                         sidebar.style.width = `${percentage}%`;
                     }
-                } 
+                }
                 else {
                     const percentage = (e.clientY / window.innerHeight) * 100;
                     if (percentage > 20 && percentage < 80) {
                         sidebar.style.height = `${percentage}%`;
                     }
                 }
-                map.invalidateSize(); 
+                map.invalidateSize();
             });
 
             window.addEventListener('touchmove', (e) => {
                 if (!isResizing) return;
                 const touch = e.touches[0];
-                
+
                 if (window.innerWidth >= 768) {
                     const percentage = (touch.clientX / window.innerWidth) * 100;
                     if (percentage > 20 && percentage < 80) {
@@ -1016,4 +1332,7 @@
 
         initResizer();
         selectDay(0);
-    </script></body></html>
+    </script>
+</body>
+
+</html>
