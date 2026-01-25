@@ -207,7 +207,7 @@
 <body class="bg-slate-100 h-screen flex flex-col md:flex-row overflow-hidden">
 
     <div class="md:hidden bg-indigo-600 text-white p-3 shadow-md z-20 flex justify-between items-center shrink-0">
-        <h1 class="font-bold text-lg">🇯🇵 5박 7일 일정표</h1>
+        <h1 class="font-bold text-lg">🇯🇵 7박 8일 일정표</h1>
         <span id="total-cost-mobile" class="text-xs bg-indigo-700 px-2 py-1 rounded font-mono"></span>
     </div>
 
@@ -215,7 +215,7 @@
         class="w-full md:w-[35%] h-[50%] md:h-full flex flex-col bg-white shadow-xl z-10 relative min-w-[200px] min-h-[150px]">
         <div class="hidden md:block p-5 bg-indigo-600 text-white shadow-md shrink-0">
             <h1 class="text-2xl font-bold">🇯🇵 Japan Travel</h1>
-            <p class="text-indigo-100 text-sm mt-1">오사카 • 교토 • 도쿄 (1일차 ~ 7일차)</p>
+            <p class="text-indigo-100 text-sm mt-1">오사카 • 교토 • 도쿄</p>
             <div class="mt-3 flex justify-between items-center">
                 <div id="total-cost-desktop"
                     class="bg-indigo-800 px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wide"></div>
@@ -546,7 +546,7 @@
                 { name: "HEY 아케이드", pos: [35.6995, 139.7705] },
                 { name: "GIGO 3호관", pos: [35.6992, 139.7710] },
                 { name: "아미아미 2호점", pos: [35.7008, 139.7722] },
-                { name: "에뮤즈 타워 (AmiAmi)", pos: [35.6980, 139.7720] }
+                { name: "트라이 어뮤즈먼트 타워 (에뮤즈타워)", pos: [35.6995, 139.7705] }
             ],
             zojoji_view: [
                 { name: "조조지 본당", pos: [35.6574, 139.7482] },
@@ -835,19 +835,18 @@
                     { time: "10:30 - 11:00", title: "고마치도리 간식", loc: LOC.komachi, pois: POIS.komachi, desc: "Giraffa (카레빵), 마메야 등" },
                     { time: "11:00 - 12:00", title: "점심: 아키모토", price: 2000, loc: LOC.akimoto, desc: "시라스동(잔멸치덮밥) 맛집" },
                     { time: "12:00 - 12:20", title: "하세역으로 이동", price: 200, type: "move", transport: "train", from: LOC.kamakuraStn, to: LOC.haseStn, desc: "에노덴 탑승" },
-                    { time: "12:20 - 13:00", title: "고토쿠인 (대불상)", loc: LOC.daibutsu, desc: "가마쿠라 대불 관람" },
-                    { time: "13:00 - 13:20", title: "가마쿠라코코마에 이동", price: 200, type: "move", transport: "train", from: LOC.haseStn, to: LOC.kamakurakoko, desc: "에노덴 탑승" },
-                    { time: "13:20 - 13:45", title: "슬램덩크 건널목", loc: LOC.kamakurakoko, desc: "사진 촬영 (인파 주의)" },
-                    { time: "13:45 - 14:20", title: "에노시마로 도보 이동", type: "move", transport: "walk", from: LOC.kamakurakoko, to: LOC.enoshimaIsland, desc: "해변 따라 걷기 (약 35분)" },
-                    { time: "14:20 - 16:30", title: "에노시마 섬 관광", loc: LOC.enoshimaIsland, pois: POIS.enoshima, desc: "신사, 동굴, 거리 구경" },
-                    { time: "16:30 - 17:30", title: "에노시마 씨캔들", loc: LOC.seaCandle, desc: "전망대 일몰 감상 (Jewel of Shonan)" },
-                    { time: "17:30 - 17:45", title: "저녁 식당 이동", type: "move", transport: "walk", from: LOC.seaCandle, to: LOC.tonkatsusaito, desc: "카타세에노시마역 인근으로 이동" },
-                    { time: "17:45 - 18:45", title: "저녁: 돈카츠 (에노시마)", price: 2000, loc: LOC.tonkatsusaito, desc: "Tonkatsu Saito or similar nearby" },
-                    { time: "18:45 - 20:15", title: "시부야로 이동", price: 650, type: "move", transport: "train", from: LOC.kataseEnoshima, to: LOC.shibuyaStn, desc: "오다큐/JR 이동 (약 1시간 30분)" },
-                    { time: "20:15 - 20:30", title: "시부야 스카이 이동", type: "move", transport: "walk", from: LOC.shibuyaStn, to: LOC.shibuyaSky, desc: "스크램블 스퀘어" },
-                    { time: "20:30 - 21:30", title: "시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "야경 감상 (쇼핑팀 합류)" },
-                    { time: "21:30 - 22:30", title: "늦은 식사/뒷풀이", price: 3000, loc: LOC.motomura, desc: "규카츠 모토무라 or 모헤지 몬자야키" },
-                    { time: "22:30 - 23:00", title: "숙소 복귀", type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.uguisudani, desc: "JR 야마노테선" }
+                    { time: "12:20 - 12:50", title: "고토쿠인 (대불상)", loc: LOC.daibutsu, desc: "가마쿠라 대불 관람 (시간 단축)" },
+                    { time: "12:50 - 13:10", title: "가마쿠라코코마에 이동", price: 200, type: "move", transport: "train", from: LOC.haseStn, to: LOC.kamakurakoko, desc: "에노덴 탑승" },
+                    { time: "13:10 - 13:30", title: "슬램덩크 건널목", loc: LOC.kamakurakoko, desc: "사진 촬영 (인파 주의)" },
+                    { time: "13:30 - 14:00", title: "에노시마로 도보 이동", type: "move", transport: "walk", from: LOC.kamakurakoko, to: LOC.enoshimaIsland, desc: "해변 따라 걷기 (약 30분)" },
+                    { time: "14:00 - 15:50", title: "에노시마 섬 관광", loc: LOC.enoshimaIsland, pois: POIS.enoshima, desc: "신사, 동굴, 거리 구경" },
+                    { time: "15:50 - 16:50", title: "에노시마 씨캔들", loc: LOC.seaCandle, desc: "전망대 및 경치 감상" },
+                    { time: "16:50 - 17:00", title: "저녁 식당 이동", type: "move", transport: "walk", from: LOC.seaCandle, to: LOC.tonkatsusaito, desc: "카타세에노시마역 인근으로 이동" },
+                    { time: "17:00 - 18:00", title: "저녁: 돈카츠 (에노시마)", price: 2000, loc: LOC.tonkatsusaito, desc: "Tonkatsu Saito (식사 후 이동)" },
+                    { time: "18:00 - 19:30", title: "시부야로 이동", price: 650, type: "move", transport: "train", from: LOC.kataseEnoshima, to: LOC.shibuyaStn, desc: "오다큐/JR 이동 (약 1시간 30분)" },
+                    { time: "19:30 - 19:40", title: "시부야 스카이 이동", type: "move", transport: "walk", from: LOC.shibuyaStn, to: LOC.shibuyaSky, desc: "스크램블 스퀘어" },
+                    { time: "19:40 - 21:00", title: "시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "야경 감상 (쇼핑팀 합류)" },
+                    { time: "21:00 - 22:00", title: "숙소 복귀", type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.uguisudani, desc: "JR 야마노테선" }
                 ],
                 items_shopping: [
                     { time: "00:00 - 09:00", title: "취침 및 늦잠", loc: LOC.uenoHotel, desc: "여유롭게 기상" },
@@ -856,12 +855,12 @@
                     { time: "13:00 - 14:00", title: "점심: 오모테산도 카페", price: 2500, loc: LOC.omotesando, desc: "브런치 (Bills, 우라산도 가든 등)" },
                     { time: "14:00 - 15:30", title: "이동: 캣스트리트 → 하라주쿠", type: "move", transport: "walk", from: LOC.omotesando, to: LOC.harajuku, desc: "편집샵 구경하며 하라주쿠로 도보 이동" },
                     { time: "15:30 - 16:00", title: "이동: 하라주쿠 → 시부야", type: "move", transport: "walk", from: LOC.harajuku, to: LOC.shibuyaSky, desc: "캣스트리트 따라 시부야 도착" },
-                    { time: "16:00 - 16:20", title: "시부야 스크램블 교차로", loc: LOC.shibuyaStn, desc: "합류 전 스타벅스 츠타야 등 구경" },
-                    { time: "16:20 - 17:40", title: "일행 합류: 시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "[어트랙션 팟 접선] 단체 사진 및 일몰" },
-                    { time: "17:40 - 18:10", title: "이동: 시부야역 → 신주쿠역", price: 170, type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.shinjukuStn, desc: "신주쿠로 이동하여 쇼핑 계속" },
-                    { time: "18:10 - 19:30", title: "저녁: 신주쿠 루미네/뉴우먼", price: 3000, loc: LOC.shinjukuStn, desc: "쇼핑몰 내 맛집 식사 (일행과 분리 식사)" },
-                    { time: "19:30 - 21:40", title: "심야 쇼핑: 이세탄/돈키호테", loc: LOC.kabukicho, desc: "이세탄 맨즈, 가부키초 인근 돈키호테 쇼핑" },
-                    { time: "21:40 - 23:30", title: "어트랙션 팀 재합류", loc: LOC.kabukicho, desc: "가부키초에서 다같이 뒷풀이" },
+                    { time: "16:00 - 17:30", title: "시부야/하라주쿠 쇼핑", loc: LOC.shibuyaStn, desc: "스크램블 교차로, 메가 돈키호테 등" },
+                    { time: "17:30 - 19:00", title: "저녁: 시부야 맛집", price: 3000, loc: LOC.shibuyaStn, desc: "시부야 인근 식사 (식사 후 합류)" },
+                    { time: "19:00 - 19:30", title: "시부야 스카이 이동", type: "move", transport: "walk", from: LOC.shibuyaStn, to: LOC.shibuyaSky, desc: "스크램블 스퀘어" },
+                    { time: "19:30 - 21:00", title: "일행 합류: 시부야 스카이", price: 2200, loc: LOC.shibuyaSky, desc: "[모두 합류] 야경 감상 및 단체 사진" },
+                    { time: "21:00 - 21:30", title: "이동: 시부야역 → 신주쿠역", price: 170, type: "move", transport: "train", from: LOC.shibuyaStn, to: LOC.shinjukuStn, desc: "신주쿠로 이동 (선택)" },
+                    { time: "21:30 - 23:30", title: "심야 쇼핑 및 뒷풀이", loc: LOC.kabukicho, desc: "가부키초, 돈키호테 등" },
                     { time: "23:30 - 24:00", title: "숙소 복귀", price: 210, type: "move", transport: "train", from: LOC.shinjukuStn, to: LOC.uguisudani, desc: "JR 야마노테선 막차" }
                 ]
             },
@@ -1171,11 +1170,11 @@
                 teamSelector.classList.add('hidden');
             }
 
-            if (dayIdx === 3) {
+            if (dayIdx === 6) {
                 legend.classList.remove('hidden');
                 legend.innerHTML = `
-                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>A팀: 멘도코로 혼다</span></div>
-                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-green-500 rounded-full"></span> <span>B팀: 호타테 비요리</span></div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-red-500 rounded-full"></span> <span>🚃 오타쿠 (3명)</span></div>
+                    <div class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-500 rounded-full"></span> <span>🛍️ 도쿄 시내 (5명)</span></div>
                 `;
             } else if (dayIdx === 5 && currentTeam === 'attraction') {
                 legend.classList.remove('hidden');
